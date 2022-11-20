@@ -1,0 +1,20 @@
+FROM golang:1.15-alpine as stage
+
+LABEL maintainer="Yves-Denis Deffo"  \
+      version="1.0" \
+      description="Command line app to encrypt/decrypt texts"
+
+WORKDIR /app
+
+COPY ./ /app/
+
+WORKDIR /app/cli-app/
+
+RUN go build -o app-cli
+
+FROM alpine as runtime
+
+COPY --from=stage /app/cli-app/app-cli /
+
+ENTRYPOINT [ "./app-cli" ]
+
