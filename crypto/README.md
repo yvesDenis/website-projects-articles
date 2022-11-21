@@ -22,7 +22,7 @@ All these info are in the [app.go](https://github.com/yvesDenis/website-projects
 Commands are the actaions performed by the cli. For the use case, we want our app to encrypt and decrypt data with a key provided by the user.
 The encryption mechanism is implemented in the [crypto-example](https://github.com/yvesDenis/website-projects-articles/blob/crypto/crypto/crypto-example/encryption.go) file.
 We are 2 commands for our CLI, one for the encryption:
-`
+``
     {
         Name:    "encrypt",
         Aliases: []string{"e"},
@@ -36,12 +36,11 @@ We are 2 commands for our CLI, one for the encryption:
             return nil
         },
     }
-
-`
+``
 
 The other for the decryption :
 
-`
+``
     {
         Name:    "decrypt",
         Aliases: []string{"d"},
@@ -55,14 +54,14 @@ The other for the decryption :
             return nil
         },
     }
-`
+``
 
 ### Flags
 
 Flags are external variable data passed alongside the commands necessary to perform actions.
 The app takes 2 required values: **The cypherKey** and **the text to encrypt/decrypt**
 
-`
+``
     Flags: []cli.Flag{
         &cli.StringFlag{
             Name:        "key",
@@ -77,15 +76,18 @@ The app takes 2 required values: **The cypherKey** and **the text to encrypt/dec
             Destination: &text,
         },
     },
-`
+
+``
+
 ### Usage
 - If you run locally , you need to build/install the program and afterwards run it:
 
-`
+``
 go build 
 
 app -h
-`
+
+``
 - A docker image of this app is already built and available on dockerHub: https://hub.docker.com/repository/docker/yvesdeffo/app-cli
 
 Docker command for encryption : docker run yvesdeffo/app-cli -k<Your-key> -t<Your-Text> encrypt
