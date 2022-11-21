@@ -93,9 +93,9 @@ The app takes 2 required values: **The cypherKey** and **the text to encrypt/dec
 
 - A docker image of this app is already built and available on dockerHub: https://hub.docker.com/repository/docker/yvesdeffo/app-cli
 
-Docker command for encryption : docker run yvesdeffo/app-cli -k<Your-key> -t<Your-Text> encrypt
+Docker command for encryption : docker run yvesdeffo/app-cli -k "Your-key" -t"Your-Text" encrypt
 
-Docker command for decryption : docker run yvesdeffo/app-cli -k<Your-key> -t<Your-Text> decrypt
+Docker command for decryption : docker run yvesdeffo/app-cli -k "Your-key" -t"Your-Text" decrypt
 
 
 
