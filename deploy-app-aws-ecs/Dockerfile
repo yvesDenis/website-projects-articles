@@ -6,7 +6,7 @@ LABEL mantainer="yvesdenis@gmail.com" \
     
 WORKDIR /app
 
-COPY ./base-app/ /app/base-app/
+COPY ./deploy-app-aws-ecs/base-app/ /app/base-app/
 
 WORKDIR /app/base-app
 
