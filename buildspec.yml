@@ -1,0 +1,15 @@
+version: 0.2
+
+phases:
+  install: 
+    runtime-versions:
+      golang: 1.18
+
+  pre_build: 
+    commands:
+      - cd deploy-app-aws-ecs/base-app/server
+      - go test -v .
+
+artifacts:
+  files:
+    - buildspec.yml
