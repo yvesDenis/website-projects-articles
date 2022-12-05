@@ -60,11 +60,9 @@
             ],
             "portMappings": [
                 {
-                    "name": "baseappcontainer-8080-tcp",
                     "containerPort": 8080,
                     "hostPort": 0,
-                    "protocol": "tcp",
-                    "appProtocol": "http"
+                    "protocol": "tcp"
                 }
             ],
             "essential": true,
