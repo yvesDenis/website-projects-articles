@@ -10,12 +10,6 @@ generate "remote_state" {
   if_exists = "overwrite_terragrunt"
   contents = <<EOF
   terraform {
-    required_providers {
-        aws = {
-        source  = "hashicorp/aws"
-        version = ">= 3.0"
-        }
-    }
     backend "remote" {
         hostname = "${local.tfc_hostname}"
         organization = "${local.tfc_organization}"

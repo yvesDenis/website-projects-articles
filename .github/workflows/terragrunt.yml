@@ -10,6 +10,8 @@ env:
   tf_working_dir: './deploy-app-aws-ecs/iac'
   AWS_REGION: ca-central-1 
   ASSUME_ROLE: arn:aws:iam::516193157210:role/base-app-role
+  TFC_API_TOKEN: ${{ secrets.TFC_API_TOKEN }}
+  TFC_HOSTNAME: "app.terraform.io" 
 
 permissions:
   id-token: write
@@ -27,44 +29,32 @@ jobs:
         with:
           role-to-assume: ${{ env.ASSUME_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
+      - name: Install Terragrunt
+        uses: autero1/action-terragrunt@v1.2.0
+
+      - name: Add the TFC token
+        run: |
+            cat > ${HOME}/.terraformrc << EOF
+            credentials "${TFC_HOSTNAME}" {
+              token = "${TFC_API_TOKEN}"
+            }
+            EOF
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: 'Terragrunt Init'
-        uses: the-commons-project/terragrunt-github-actions@master
-        with:
-          tf_actions_version: ${{ env.tf_version }}
-          tg_actions_version: ${{ env.tg_version }}
-          tf_actions_subcommand: 'init'
-          tf_actions_working_dir: ${{ env.tf_working_dir }}
-          tf_actions_cli_credentials_token: ${{ secrets.TFC_API_TOKEN }}
+        run: cd ./deploy-app-aws-ecs/iac && terraform init
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: 'Terragrunt Validate'
-        uses: the-commons-project/terragrunt-github-actions@master
-        with:
-          tf_actions_version: ${{ env.tf_version }}
-          tg_actions_version: ${{ env.tg_version }}
-          tf_actions_binary: 'terraform'
-          tf_actions_subcommand: 'validate'
-          tf_actions_working_dir: ${{ env.tf_working_dir }}
-          tf_actions_cli_credentials_token: ${{ secrets.TFC_API_TOKEN }}
+        run: cd ./deploy-app-aws-ecs/iac && terragrunt run-all validate
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: 'Terragrunt Plan'
-        uses: the-commons-project/terragrunt-github-actions@master
-        with:
-          tf_actions_version: ${{ env.tf_version }}
-          tg_actions_version: ${{ env.tg_version }}
-          tf_actions_subcommand: 'plan'
-          tf_actions_working_dir: ${{ env.tf_working_dir }}
-          tf_actions_cli_credentials_token: ${{ secrets.TFC_API_TOKEN }}
+        run: cd ./deploy-app-aws-ecs/iac && terragrunt run-all plan
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: 'Terragrunt run-all apply'
-        uses: the-commons-project/terragrunt-github-actions@master
-        with:
-          tf_actions_version: ${{ env.tf_version }}
-          tg_actions_version: ${{ env.tg_version }}
-          tf_actions_subcommand: 'apply'
-          tf_actions_working_dir: ${{ env.tf_working_dir }}
-          tf_actions_cli_credentials_token: ${{ secrets.TFC_API_TOKEN }}
+      - name: 'Terragrunt Apply'
+        run: cd ./deploy-app-aws-ecs/iac && terragrunt run-all apply
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
