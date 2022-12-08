@@ -5,9 +5,6 @@ on:
     branches: [ "iac*" ]
 
 env:
-  tf_version: 'latest'
-  tg_version: 'latest'
-  tf_working_dir: './deploy-app-aws-ecs/iac'
   AWS_REGION: ca-central-1 
   ASSUME_ROLE: arn:aws:iam::516193157210:role/base-app-role
   TFC_API_TOKEN: ${{ secrets.TFC_API_TOKEN }}
@@ -43,9 +40,6 @@ jobs:
             EOF
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Check if AWS_ACCESS_KEY is present
-        run: echo "${AWS_ACCESS_KEY_ID}"
 
       - name: 'Terragrunt Init'
         run: cd ./deploy-app-aws-ecs/iac && terraform init
