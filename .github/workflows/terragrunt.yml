@@ -42,7 +42,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Terragrunt Init'
-        run: cd ./deploy-app-aws-ecs/iac && terraform init
+        run: cd ./deploy-app-aws-ecs/iac && terraform init -reconfigure 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: 'Terragrunt Validate'
