@@ -43,7 +43,7 @@ jobs:
           tf_actions_version: ${{ env.tf_version }}
           tg_actions_version: ${{ env.tg_version }}
           tf_actions_binary: 'terraform'
-          tf_actions_subcommand: 'run-all validate'
+          tf_actions_subcommand: 'validate'
           tf_actions_working_dir: ${{ env.tf_working_dir }}
           tf_actions_cli_credentials_token: ${{ secrets.TFC_API_TOKEN }}
         env:
@@ -53,7 +53,7 @@ jobs:
         with:
           tf_actions_version: ${{ env.tf_version }}
           tg_actions_version: ${{ env.tg_version }}
-          tf_actions_subcommand: 'run-all plan'
+          tf_actions_subcommand: 'plan'
           tf_actions_working_dir: ${{ env.tf_working_dir }}
           tf_actions_cli_credentials_token: ${{ secrets.TFC_API_TOKEN }}
         env:
@@ -63,7 +63,7 @@ jobs:
         with:
           tf_actions_version: ${{ env.tf_version }}
           tg_actions_version: ${{ env.tg_version }}
-          tf_actions_subcommand: 'run-all apply'
+          tf_actions_subcommand: 'apply'
           tf_actions_working_dir: ${{ env.tf_working_dir }}
           tf_actions_cli_credentials_token: ${{ secrets.TFC_API_TOKEN }}
         env:
