@@ -10,7 +10,7 @@ resource "aws_codebuild_project" "base_app_codebuild" {
   name          = "base-app-codebuild"
   description   = "Codebuild project for testing base-app"
   build_timeout = "5"
-  service_role  = aws_iam_role.base_app_codebuild_role.arn
+  service_role  = data.aws_iam_role.base_app_codebuild_role.arn
 
   artifacts {
     type = "NO_ARTIFACTS"
