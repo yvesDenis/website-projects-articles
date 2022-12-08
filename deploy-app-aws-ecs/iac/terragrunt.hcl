@@ -35,6 +35,7 @@ provider "aws" {
   region = "${local.region}"
   access_key = "${get_env("AWS_ACCESS_KEY_ID", "access_key")}"
   secret_key = "${get_env("AWS_SECRET_ACCESS_KEY", "secret_key")}"
+  token = "${get_env("AWS_SESSION_TOKEN", "token")}"
 }
 EOF
 }
