@@ -13,7 +13,7 @@ generate "remote_state" {
     required_providers {
         aws = {
         source  = "hashicorp/aws"
-        version = ">= 3.0"
+        version = "3.74.2"
         }
     }
     backend "remote" {
