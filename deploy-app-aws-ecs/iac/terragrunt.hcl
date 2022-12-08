@@ -1,7 +1,7 @@
 locals {
   tfc_hostname     = "app.terraform.io" 
   tfc_organization = "iac-projects"
-  workspace        = "website-projects-articles"
+  workspace        = "base-app-iac"
   region           = "ca-central-1"
 }
 
@@ -9,20 +9,26 @@ generate "remote_state" {
   path      = "backend.tf"
   if_exists = "overwrite_terragrunt"
   contents = <<EOF
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 3.0"
+  terraform {
+    cloud {
+        organization = "${local.tfc_organization}"
+        workspaces {
+        name = "${local.workspace}"
+        }
     }
-  }
-  backend "remote" {
-    hostname = "${local.tfc_hostname}"
-    organization = "${local.tfc_organization}"
-    workspaces {
-      name = "${local.workspace}"
+    required_providers {
+        aws = {
+        source  = "hashicorp/aws"
+        version = ">= 3.0"
+        }
     }
-  }
+    backend "remote" {
+        hostname = "${local.tfc_hostname}"
+        organization = "${local.tfc_organization}"
+        workspaces {
+        name = "${local.workspace}"
+        }
+    }
 }
 EOF
 }
