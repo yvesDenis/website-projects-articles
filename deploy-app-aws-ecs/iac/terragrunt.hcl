@@ -2,7 +2,6 @@ locals {
   tfc_hostname     = "app.terraform.io" 
   tfc_organization = "iac-projects"
   workspace        = "base-app-iac"
-  region           = "ca-central-1"
 }
 
 generate "remote_state" {
@@ -23,16 +22,6 @@ generate "remote_state" {
         name = "${local.workspace}"
         }
     }
-}
-EOF
-}
-
-generate "provider" {
-  path = "provider.tf"
-  if_exists = "overwrite_terragrunt"
-  contents = <<EOF
-provider "aws" {
-  region = "${local.region}"
 }
 EOF
 }
