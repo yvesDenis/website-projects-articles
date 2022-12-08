@@ -41,6 +41,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: run AWS CLI
+        run: aws iam ls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: 'Terragrunt Init'
         run: cd ./deploy-app-aws-ecs/iac && terraform init -reconfigure 
         env:
