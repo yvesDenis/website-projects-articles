@@ -54,6 +54,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: 'Terragrunt Apply'
-        run: cd ./deploy-app-aws-ecs/iac && terragrunt run-all apply
+        run: cd ./deploy-app-aws-ecs/iac && terragrunt run-all apply -auto-approve
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
