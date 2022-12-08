@@ -42,7 +42,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: run AWS CLI
-        run: aws iam ls
+        run: aws iam list-groups
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
