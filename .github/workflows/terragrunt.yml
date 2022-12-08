@@ -31,6 +31,8 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
       - name: Install Terragrunt
         uses: autero1/action-terragrunt@v1.2.0
+        with:
+          terragrunt_version: latest
 
       - name: Add the TFC token
         run: |
