@@ -1,7 +1,7 @@
 locals {
   tfc_hostname     = "app.terraform.io" 
   tfc_organization = "iac-projects"
-  workspace        = "base-app-iac"
+  workspace        = "base-app"
   region           = "ca-central-1"
 }
 
@@ -14,7 +14,7 @@ generate "remote_state" {
       hostname = "${local.tfc_hostname}"
       organization = "${local.tfc_organization}"
       workspaces {
-        name = "${local.workspace}"
+        name = "${local.workspace}-${path_relative_to_include()}"
       }
     }
   }
