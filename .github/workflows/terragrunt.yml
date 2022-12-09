@@ -41,15 +41,15 @@ jobs:
             EOF
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: 'Terragrunt Validate'
+      - name: Terragrunt Validate
         run: cd ./deploy-app-aws-ecs/iac && terragrunt run-all validate
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: 'Terragrunt Plan'
+      - name: Terragrunt Plan
         run: cd ./deploy-app-aws-ecs/iac && terragrunt run-all plan
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: 'Terragrunt Apply'
+      - name: Terragrunt Apply
         run: cd ./deploy-app-aws-ecs/iac && terragrunt run-all apply
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -61,3 +61,5 @@ jobs:
           project: inspec
       - name: Compliance tests
         run: cd ./deploy-app-aws-ecs/iac/test && inspec exec . -t aws://
+        env:
+          CHEF_LICENSE: accept-silent
