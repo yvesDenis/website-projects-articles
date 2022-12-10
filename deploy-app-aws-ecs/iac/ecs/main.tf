@@ -39,7 +39,7 @@ data "aws_launch_template" "base_app_aws_launch_template" {
 }
 
 resource "aws_autoscaling_group" "base_app_aws_autoscaling_group" {
-  vpc_zone_identifier = ["ca-central-1a","ca-central-1b","ca-central-1c"]
+  vpc_zone_identifier = data.aws_subnets.base_app_aws_subnet_ids.ids
   desired_capacity   = 3
   max_size           = 3
   min_size           = 2
