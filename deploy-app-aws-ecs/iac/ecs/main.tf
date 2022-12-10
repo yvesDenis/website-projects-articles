@@ -4,7 +4,7 @@ locals {
 
 
 resource "aws_ecs_cluster" "base_app_aws_ecs_cluster" {
-  name = "base_app_cluster"
+  name = "base-app-cluster"
 
   tags = {
     name = "base-app"
@@ -19,7 +19,7 @@ resource "aws_ecs_cluster_capacity_providers" "base_app_aws_ecs_cluster_capacity
 }
 
 resource "aws_ecs_capacity_provider" "base_app_aws_ecs_capacity_provider" {
-  name = "base_app_capacity_provider"
+  name = "base-app-capacity-provider"
 
   auto_scaling_group_provider {
     auto_scaling_group_arn         = aws_autoscaling_group.base_app_aws_autoscaling_group.arn
@@ -47,32 +47,30 @@ resource "aws_autoscaling_group" "base_app_aws_autoscaling_group" {
   health_check_type         = "ELB"
 
   launch_template {
-    id      = aws_launch_template.base_app_aws_launch_template.id
+    id      = data.aws_launch_template.base_app_aws_launch_template.id
     version = "$Latest"
-  }
-
-  tags = {
-    name = "base-app"
-    subject = "github"
   }
 }
 
 data "aws_security_groups" "base_app_aws_security_groups" {
+  filter {
+    name   = "group-name"
+    values = ["myFirstALB"]
+  }
+}
+
+data "aws_subnets" "base_app_aws_subnet_ids" {
   filter {
     name   = "vpc-id"
     values = [local.vpc_id]
   }
 }
 
-data "aws_subnet_ids" "base_app_aws_subnet_ids" {
-  vpc_id = local.vpc_id
-}
-
 resource "aws_lb" "base_app_aws_lb" {
-  name               = "base_app_alb"
+  name               = "base-app-alb"
   internal           = false
   security_groups    = data.aws_security_groups.base_app_aws_security_groups.ids
-  subnets            = data.aws_subnet_ids.base_app_aws_subnet_ids.ids
+  subnets            = data.aws_subnets.base_app_aws_subnet_ids.ids
 
   enable_deletion_protection = true
 
@@ -94,7 +92,7 @@ resource "aws_lb_listener" "base_app_aws_lb_listener" {
 }
 
 resource "aws_lb_target_group" "base_app_aws_lb_target_group" {
-   name     = "base_app_lb_target_group"
+   name     = "base-app-lb-target-group"
    port     = 8080
    protocol = "HTTP"
    vpc_id   = local.vpc_id
@@ -111,7 +109,7 @@ resource "aws_autoscaling_attachment" "base_app_aws_autoscaling_attachment" {
 }
 
 resource "aws_ecs_task_definition" "base_app_aws_ecs_task_definition" {
-  family = "base_app_task_definition"
+  family = "base-app-task-definition"
   container_definitions = jsonencode([
     {
       name      = "base-app-container"
@@ -130,10 +128,10 @@ resource "aws_ecs_task_definition" "base_app_aws_ecs_task_definition" {
   execution_role_arn = "arn:aws:iam::516193157210:role/ecsTaskExecutionRole"
   network_mode = "bridge"
   runtime_platform {
-    cpu_architecture = "X86_64",
+    cpu_architecture = "X86_64"
     operating_system_family = "LINUX"
   }
-  requires_compatibilities = "EC2"
+  requires_compatibilities = ["EC2"]
 
   tags = {
     name = "base-app"
@@ -142,7 +140,7 @@ resource "aws_ecs_task_definition" "base_app_aws_ecs_task_definition" {
 }
 
 resource "aws_ecs_service" "base_app_aws_ecs_service" {
-  name            = "base_app_ecs_service"
+  name            = "base-app-ecs-service"
   cluster         = aws_ecs_cluster.base_app_aws_ecs_cluster.id
   task_definition = aws_ecs_task_definition.base_app_aws_ecs_task_definition.arn
   desired_count   = 1
