@@ -45,6 +45,7 @@ resource "aws_autoscaling_group" "base_app_aws_autoscaling_group" {
   min_size           = 2
   health_check_grace_period = 300
   health_check_type         = "ELB"
+  protect_from_scale_in  = true
 
   launch_template {
     id      = data.aws_launch_template.base_app_aws_launch_template.id
