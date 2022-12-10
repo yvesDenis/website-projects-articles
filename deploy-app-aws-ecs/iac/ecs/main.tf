@@ -106,7 +106,7 @@ resource "aws_lb_target_group" "base_app_aws_lb_target_group" {
 
 resource "aws_autoscaling_attachment" "base_app_aws_autoscaling_attachment" {
   autoscaling_group_name = aws_autoscaling_group.base_app_aws_autoscaling_group.id
-  alb_target_group_arn   = aws_lb_target_group.base_app_aws_lb_target_group.arn
+  lb_target_group_arn   = aws_lb_target_group.base_app_aws_lb_target_group.arn
 }
 
 resource "aws_ecs_task_definition" "base_app_aws_ecs_task_definition" {
@@ -115,8 +115,8 @@ resource "aws_ecs_task_definition" "base_app_aws_ecs_task_definition" {
     {
       name      = "base-app-container"
       image     = "516193157210.dkr.ecr.ca-central-1.amazonaws.com/base-app-repo:9fd96f8d919ff33e07a01dd2c6da8e9d69b73f7f"
-      cpu       = 300
-      memory    = 400
+      cpu       = "256"
+      memory    = "512"
       essential = true
       portMappings = [
         {
@@ -126,6 +126,8 @@ resource "aws_ecs_task_definition" "base_app_aws_ecs_task_definition" {
       ]
     }
   ])
+  cpu       = "256"
+  memory    = "512"
   execution_role_arn = "arn:aws:iam::516193157210:role/ecsTaskExecutionRole"
   network_mode = "bridge"
   runtime_platform {
