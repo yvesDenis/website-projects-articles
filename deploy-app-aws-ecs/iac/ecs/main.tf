@@ -115,8 +115,6 @@ resource "aws_ecs_task_definition" "base_app_aws_ecs_task_definition" {
     {
       name      = "base-app-container"
       image     = "516193157210.dkr.ecr.ca-central-1.amazonaws.com/base-app-repo:9fd96f8d919ff33e07a01dd2c6da8e9d69b73f7f"
-      cpu       = "256"
-      memory    = "512"
       essential = true
       portMappings = [
         {
