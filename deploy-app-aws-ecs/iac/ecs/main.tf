@@ -39,7 +39,7 @@ data "aws_launch_template" "base_app_aws_launch_template" {
 }
 
 resource "aws_autoscaling_group" "base_app_aws_autoscaling_group" {
-  availability_zones = ["ca-central-1a","ca-central-1b","ca-central-1c"]
+  vpc_zone_identifier = ["ca-central-1a","ca-central-1b","ca-central-1c"]
   desired_capacity   = 3
   max_size           = 3
   min_size           = 2
@@ -61,8 +61,8 @@ data "aws_security_groups" "base_app_aws_security_groups" {
 
 data "aws_subnets" "base_app_aws_subnet_ids" {
   filter {
-    name   = "vpc-id"
-    values = [local.vpc_id]
+    name   = "tag:use"
+    values = ["auto-scaling"]
   }
 }
 
@@ -120,7 +120,7 @@ resource "aws_ecs_task_definition" "base_app_aws_ecs_task_definition" {
       portMappings = [
         {
           containerPort = 8080
-          hostPort      = 80
+          hostPort      = 0
         }
       ]
     }
