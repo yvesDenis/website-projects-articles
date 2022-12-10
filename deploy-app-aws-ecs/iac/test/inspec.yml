@@ -1,0 +1,14 @@
+name: test
+title: AWS InSpec Profile for base-app
+maintainer: yvesdeffo@gmail.com
+copyright: yvesdeffo@gmail.com
+copyright_email: yvesdeffo@gmail.com
+license: Apache-2.0
+summary: Infrastructure integration testing
+version: 0.1.0
+inspec_version: '~> 5'
+depends:
+  - name: inspec-aws
+    url: https://github.com/inspec/inspec-aws/archive/main.tar.gz
+supports:
+  - platform: aws
