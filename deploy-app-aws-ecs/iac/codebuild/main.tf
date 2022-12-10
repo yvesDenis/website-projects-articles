@@ -66,3 +66,19 @@ resource "aws_codebuild_project" "base_app_codebuild" {
     subject = "github"
   }
 }
+
+resource "aws_codebuild_webhook" "base_app_codebuild_webhook" {
+  project_name = aws_codebuild_project.base_app_codebuild.name
+  build_type   = "BUILD"
+  filter_group {
+    filter {
+      type    = "EVENT"
+      pattern = "PUSH,PULL_REQUEST_CREATED,PULL_REQUEST_UPDATED"
+    }
+
+    filter {
+      type    = "HEAD_REF"
+      pattern = "master"
+    }
+  }
+}
