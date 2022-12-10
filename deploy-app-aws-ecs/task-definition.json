@@ -3,14 +3,14 @@
     "containerDefinitions": [
         {
             "name": "base-app-container",
-            "image": "516193157210.dkr.ecr.ca-central-1.amazonaws.com/base-app:4ddba3496e42cb22b474fd98cc0f5153aceebbf1",
+            "image": "516193157210.dkr.ecr.ca-central-1.amazonaws.com/base-app-repo:9fd96f8d919ff33e07a01dd2c6da8e9d69b73f7f",
             "cpu": 0,
             "links": [],
             "portMappings": [
                 {
                     "name": "base-app-container-8080-tcp",
                     "containerPort": 8080,
-                    "hostPort": 8080,
+                    "hostPort": 0,
                     "protocol": "tcp",
                     "appProtocol": "http"
                 }
@@ -32,10 +32,10 @@
             "systemControls": []
         }
     ],
-    "family": "base-app-task",
+    "family": "base_app_task_definition",
     "executionRoleArn": "arn:aws:iam::516193157210:role/ecsTaskExecutionRole",
     "networkMode": "bridge",
-    "revision": 5,
+    "revision": 1,
     "volumes": [],
     "status": "ACTIVE",
     "requiresAttributes": [
@@ -59,14 +59,12 @@
     "requiresCompatibilities": [
         "EC2"
     ],
-    "cpu": "512",
-    "memory": "717",
+    "cpu": "300",
+    "memory": "400",
     "runtimePlatform": {
         "cpuArchitecture": "X86_64",
         "operatingSystemFamily": "LINUX"
     },
-    "registeredAt": "2022-12-06T01:33:48.374Z",
-    "registeredBy": "arn:aws:iam::516193157210:user/terraform",
     "tags": [
         {
             "key": "name",
