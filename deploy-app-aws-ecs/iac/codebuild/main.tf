@@ -32,7 +32,7 @@ resource "aws_codebuild_project" "base_app_codebuild" {
 
   environment {
     compute_type                = "BUILD_GENERAL1_SMALL"
-    image                       = "aws/codebuild/standard:3.0"
+    image                       = "aws/codebuild/standard:6.0"
     type                        = "LINUX_CONTAINER"
     image_pull_credentials_type = "CODEBUILD"
   }
@@ -53,6 +53,7 @@ resource "aws_codebuild_project" "base_app_codebuild" {
     type            = "GITHUB"
     location        = "https://github.com/yvesDenis/website-projects-articles.git"
     git_clone_depth = 5
+    report_build_status = true
 
     git_submodules_config {
       fetch_submodules = true
@@ -74,11 +75,6 @@ resource "aws_codebuild_webhook" "base_app_codebuild_webhook" {
     filter {
       type    = "EVENT"
       pattern = "PUSH,PULL_REQUEST_CREATED,PULL_REQUEST_UPDATED"
-    }
-
-    filter {
-      type    = "HEAD_REF"
-      pattern = "master"
     }
   }
 }
