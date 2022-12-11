@@ -15,7 +15,7 @@ resource "aws_ecs_cluster" "base_app_aws_ecs_cluster" {
 resource "aws_ecs_cluster_capacity_providers" "base_app_aws_ecs_cluster_capacity_providers" {
   cluster_name = aws_ecs_cluster.base_app_aws_ecs_cluster.name
 
-  capacity_providers = [aws_ecs_capacity_provider.base_app_aws_ecs_capacity_provider.name]
+  capacity_providers = [aws_ecs_capacity_provider.base_app_aws_ecs_capacity_provider.name,"FARGATE","FARGATE_SPOT"]
 }
 
 resource "aws_ecs_capacity_provider" "base_app_aws_ecs_capacity_provider" {

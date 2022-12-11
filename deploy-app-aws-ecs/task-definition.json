@@ -1,41 +1,27 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:ca-central-1:516193157210:task-definition/base-app-task:5",
+    "taskDefinitionArn": "arn:aws:ecs:ca-central-1:516193157210:task-definition/base-app-task-definition:3",
     "containerDefinitions": [
         {
             "name": "base-app-container",
             "image": "516193157210.dkr.ecr.ca-central-1.amazonaws.com/base-app-repo:9fd96f8d919ff33e07a01dd2c6da8e9d69b73f7f",
             "cpu": 0,
-            "links": [],
             "portMappings": [
                 {
-                    "name": "base-app-container-8080-tcp",
                     "containerPort": 8080,
                     "hostPort": 0,
-                    "protocol": "tcp",
-                    "appProtocol": "http"
+                    "protocol": "tcp"
                 }
             ],
             "essential": true,
-            "entryPoint": [],
-            "command": [],
             "environment": [],
-            "environmentFiles": [],
             "mountPoints": [],
-            "volumesFrom": [],
-            "secrets": [],
-            "dnsServers": [],
-            "dnsSearchDomains": [],
-            "extraHosts": [],
-            "dockerSecurityOptions": [],
-            "dockerLabels": {},
-            "ulimits": [],
-            "systemControls": []
+            "volumesFrom": []
         }
     ],
-    "family": "base_app_task_definition",
+    "family": "base-app-task-definition",
     "executionRoleArn": "arn:aws:iam::516193157210:role/ecsTaskExecutionRole",
     "networkMode": "bridge",
-    "revision": 1,
+    "revision": 3,
     "volumes": [],
     "status": "ACTIVE",
     "requiresAttributes": [
@@ -43,40 +29,29 @@
             "name": "com.amazonaws.ecs.capability.ecr-auth"
         },
         {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.17"
-        },
-        {
             "name": "ecs.capability.execution-role-ecr-pull"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
         }
     ],
     "placementConstraints": [],
     "compatibilities": [
+        "EXTERNAL",
         "EC2"
     ],
     "requiresCompatibilities": [
         "EC2"
     ],
-    "cpu": "300",
-    "memory": "400",
+    "cpu": "256",
+    "memory": "512",
     "runtimePlatform": {
         "cpuArchitecture": "X86_64",
         "operatingSystemFamily": "LINUX"
     },
+    "registeredAt": "2022-12-10T21:50:00.743Z",
+    "registeredBy": "arn:aws:sts::516193157210:assumed-role/base-app-role/GitHubActions",
     "tags": [
         {
             "key": "name",
             "value": "base-app"
-        },
-        {
-            "key": "ecs:taskDefinition:createdFrom",
-            "value": "ecs-console-v2"
-        },
-        {
-            "key": "ecs:taskDefinition:stackId",
-            "value": "arn:aws:cloudformation:ca-central-1:516193157210:stack/ECS-Console-V2-TaskDefinition-e7c1cc4d-c922-4f0e-b17c-e9083ff46979/05b624b0-7506-11ed-ba6c-0247fff5b870"
         },
         {
             "key": "subject",
