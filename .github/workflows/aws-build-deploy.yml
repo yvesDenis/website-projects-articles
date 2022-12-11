@@ -40,7 +40,7 @@ env:
                                                # file, e.g. .aws/task-definition.json
   CONTAINER_NAME: base-app-container           # set this to the name of the container in the
                                                # containerDefinitions section of your task definition
-  ECS_READY: false
+  ECS_READY: true
 
 permissions:
   id-token: write
