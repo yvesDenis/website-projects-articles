@@ -1,3 +1,9 @@
 # Build, Deploy and Run App in Amazon ECS with Github Actions, AWS CodeBuild, Terraform
 
-![Architecture diagram](./images/build-deploy-aws-ecs.drawio.png)
+## First part 
+
+https://yvesdenis.github.io/post/ecs-ecr-codebuild-part-1-post/
+
+## Second part
+
+https://yvesdenis.github.io/post/ecs-ecr-codebuild-part-2-post/
