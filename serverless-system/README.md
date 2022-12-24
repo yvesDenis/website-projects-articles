@@ -1,0 +1,1 @@
+![Serverless-system architecture diagram](serverless-system.svg)
