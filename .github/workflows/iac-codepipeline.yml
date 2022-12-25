@@ -29,7 +29,7 @@ jobs:
       - uses: pulumi/actions@v3
         with:
           command: preview
-          stack-name: iac-codepipeline
+          stack-name: blog-projects/iac-codepipeline/prod
           color: always
           work-dir: serverless-system/iac-pulumi
         env:
