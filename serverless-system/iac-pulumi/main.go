@@ -20,7 +20,7 @@ type result_infra struct {
 func createInfrastructure(ctx *pulumi.Context) (*result_infra, error) {
 
 	// Codebuild project
-	serverlessCodebuildBucketV2, err := s3.NewBucketV2(ctx, "serverlessCodebuildBucketV2", nil)
+	serverlessCodebuildBucketV2, err := s3.NewBucketV2(ctx, "serverless-codebuild-bucket-v2", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -128,12 +128,6 @@ func createInfrastructure(ctx *pulumi.Context) (*result_infra, error) {
 			CloudwatchLogs: &codebuild.ProjectLogsConfigCloudwatchLogsArgs{
 				GroupName:  pulumi.String("serverless-codebuild-log-group"),
 				StreamName: pulumi.String("serverless-codebuild-log-stream"),
-			},
-			S3Logs: &codebuild.ProjectLogsConfigS3LogsArgs{
-				Status: pulumi.String("ENABLED"),
-				Location: serverlessCodebuildBucketV2.ID().ApplyT(func(id string) (string, error) {
-					return fmt.Sprintf("%v/build-log", id), nil
-				}).(pulumi.StringOutput),
 			},
 		},
 		Source: &codebuild.ProjectSourceArgs{
