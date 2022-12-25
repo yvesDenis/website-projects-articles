@@ -208,7 +208,7 @@ func createInfrastructure(ctx *pulumi.Context) (*result_infra, error) {
 						Category: pulumi.String("Source"),
 						Owner:    pulumi.String("AWS"),
 						Provider: pulumi.String("CodeStarSourceConnection"),
-						Version:  pulumi.String("2"),
+						Version:  pulumi.String("1"),
 						OutputArtifacts: pulumi.StringArray{
 							pulumi.String("source_output"),
 						},
