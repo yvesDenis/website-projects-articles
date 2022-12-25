@@ -25,12 +25,12 @@ jobs:
         with:
           role-to-assume: ${{ env.ASSUME_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
-      - run: cd /serverless-system/iac-pulumi/ && go mod download
+      - run: cd ./serverless-system/iac-pulumi && go mod download
       - uses: pulumi/actions@v3
         with:
           command: preview
           stack-name: iac-codepipeline
           color: always
-          work-dir: /serverless-system/iac-pulumi/
+          work-dir: serverless-system/iac-pulumi
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_TOKEN }}
