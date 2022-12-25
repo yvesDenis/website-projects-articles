@@ -150,7 +150,7 @@ func createInfrastructure(ctx *pulumi.Context) (*result_infra, error) {
 
 	// Codepipeline project
 	serverlessSystemConnection, err := codestarconnections.NewConnection(ctx, "serverlesssystemconnection", &codestarconnections.ConnectionArgs{
-		Name:         pulumi.string("serverlesssystemconnection"),
+		Name:         pulumi.String("serverlesssystemconnection"),
 		ProviderType: pulumi.String("GitHub"),
 	})
 	if err != nil {
