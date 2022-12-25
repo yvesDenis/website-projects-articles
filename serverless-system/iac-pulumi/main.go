@@ -215,7 +215,7 @@ func createInfrastructure(ctx *pulumi.Context) (*result_infra, error) {
 						Configuration: pulumi.StringMap{
 							"ConnectionArn":    serverlessSystemConnection.Arn,
 							"FullRepositoryId": pulumi.String("yvesDenis/website-projects-articles"),
-							"BranchName":       pulumi.String("serverless-system"),
+							"BranchName":       pulumi.String("serverless-system-deploy"),
 						},
 					},
 				},
@@ -229,7 +229,7 @@ func createInfrastructure(ctx *pulumi.Context) (*result_infra, error) {
 						Owner:    pulumi.String("AWS"),
 						Provider: pulumi.String("CodeBuild"),
 						InputArtifacts: pulumi.StringArray{
-							pulumi.String("source_output"),
+							pulumi.String("serverless-system/codebuild/buildspec.yml"),
 						},
 						OutputArtifacts: pulumi.StringArray{
 							pulumi.String("build_output"),
@@ -257,7 +257,7 @@ func createInfrastructure(ctx *pulumi.Context) (*result_infra, error) {
 							"ActionMode":     pulumi.String("REPLACE_ON_FAILURE"),
 							"Capabilities":   pulumi.String("CAPABILITY_AUTO_EXPAND,CAPABILITY_IAM"),
 							"OutputFileName": pulumi.String("CreateStackOutput.json"),
-							"StackName":      pulumi.String("MyStack"),
+							"StackName":      pulumi.String("serverlessSystemStack"),
 							"TemplatePath":   pulumi.String("build_output::sam-templated.yaml"),
 						},
 					},
