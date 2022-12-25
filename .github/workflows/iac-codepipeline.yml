@@ -12,8 +12,8 @@ permissions:
   contents: read
 
 jobs:
-  preview:
-    name: Preview
+  iac-deploy:
+    name: IAC Deploy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -25,8 +25,12 @@ jobs:
         with:
           role-to-assume: ${{ env.ASSUME_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
-      - run: cd ./serverless-system/iac-pulumi && go mod download
-      - uses: pulumi/actions@v3
+      - name: Download project dependencies
+        run: cd ./serverless-system/iac-pulumi && go mod download
+      - name: Run Pulumi unit tests
+        run: cd ./serverless-system/iac-pulumi && go test -v .
+      - name: Displays a preview of the updates to the existing stack
+        uses: pulumi/actions@v3
         with:
           command: preview
           stack-name: blog-projects/iac-codepipeline/prod
@@ -34,3 +38,13 @@ jobs:
           work-dir: serverless-system/iac-pulumi
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_TOKEN }}
+      - name: Create or update the resources in a stack
+        uses: pulumi/actions@v3
+        with:
+          command: up
+          stack-name: blog-projects/iac-codepipeline/prod
+          color: always
+          work-dir: serverless-system/iac-pulumi
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_TOKEN }}
+      

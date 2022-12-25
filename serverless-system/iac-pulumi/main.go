@@ -109,6 +109,7 @@ func createInfrastructure(ctx *pulumi.Context) (*result_infra, error) {
 	}
 	serverlesscodebuildProject, err := codebuild.NewProject(ctx, "serverlesscodebuildProject", &codebuild.ProjectArgs{
 		Description:  pulumi.String("serverless_codebuild_project"),
+		Name:         pulumi.String("serverlesscodebuildProject"),
 		BuildTimeout: pulumi.Int(5),
 		ServiceRole:  serverlesscodebuildrole.Arn,
 		Artifacts: &codebuild.ProjectArtifactsArgs{
@@ -186,6 +187,7 @@ func createInfrastructure(ctx *pulumi.Context) (*result_infra, error) {
 	}
 	codepipeline, err := codepipeline.NewPipeline(ctx, "serverlesscodepipeline", &codepipeline.PipelineArgs{
 		RoleArn: codepipelineRole.Arn,
+		Name:    pulumi.String("serverlesscodepipeline"),
 		ArtifactStores: codepipeline.PipelineArtifactStoreArray{
 			&codepipeline.PipelineArtifactStoreArgs{
 				Location: codepipelineBucket.Bucket,
