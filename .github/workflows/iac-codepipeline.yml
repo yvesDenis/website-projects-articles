@@ -1,4 +1,4 @@
-name: Pulumi
+name: IAC codepipeline - codebuild
 on:
   push:
       branches: [ "serverless-system" ]
