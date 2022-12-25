@@ -5,7 +5,9 @@ go 1.17
 require github.com/pulumi/pulumi-aws/sdk/v5 v5.25.0
 
 require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gofrs/flock v0.7.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/pulumi/pulumi/sdk v1.13.1 // indirect
 	github.com/src-d/gcfg v1.4.0 // indirect
 	gopkg.in/src-d/go-billy.v4 v4.3.2 // indirect
@@ -54,6 +56,7 @@ require (
 	github.com/skeema/knownhosts v1.1.0 // indirect
 	github.com/spf13/cobra v1.6.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/stretchr/testify v1.8.1
 	github.com/texttheater/golang-levenshtein v1.0.1 // indirect
 	github.com/tweekmonster/luser v0.0.0-20161003172636-3fa38070dbd7 // indirect
 	github.com/uber/jaeger-client-go v2.30.0+incompatible // indirect
