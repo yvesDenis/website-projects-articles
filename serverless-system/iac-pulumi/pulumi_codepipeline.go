@@ -105,6 +105,9 @@ func createInfrastructureCodepipeline(ctx *pulumi.Context) (*result_infra, error
 						Category: pulumi.String("Build"),
 						Owner:    pulumi.String("AWS"),
 						Provider: pulumi.String("CodeBuild"),
+						InputArtifacts: pulumi.StringArray{
+							pulumi.String("source_output"),
+						},
 						OutputArtifacts: pulumi.StringArray{
 							pulumi.String("build_output"),
 						},

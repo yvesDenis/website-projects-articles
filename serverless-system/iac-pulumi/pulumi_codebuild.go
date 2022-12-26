@@ -116,12 +116,6 @@ func createInfrastructureCodebuild(ctx *pulumi.Context) (*codebuild.Project, err
 			Image:                    pulumi.String("aws/codebuild/standard:6.0"),
 			Type:                     pulumi.String("LINUX_CONTAINER"),
 			ImagePullCredentialsType: pulumi.String("CODEBUILD"),
-			EnvironmentVariables: codebuild.ProjectEnvironmentEnvironmentVariableArray{
-				&codebuild.ProjectEnvironmentEnvironmentVariableArgs{
-					Name:  pulumi.String("CODEBUILD_SRC_DIR"),
-					Value: pulumi.String("serverless-system/codebuild/buildspec.yml"),
-				},
-			},
 		},
 		LogsConfig: &codebuild.ProjectLogsConfigArgs{
 			CloudwatchLogs: &codebuild.ProjectLogsConfigCloudwatchLogsArgs{
@@ -133,6 +127,7 @@ func createInfrastructureCodebuild(ctx *pulumi.Context) (*codebuild.Project, err
 			Type:          pulumi.String("GITHUB"),
 			Location:      pulumi.String("https://github.com/yvesDenis/website-projects-articles.git"),
 			GitCloneDepth: pulumi.Int(5),
+			Buildspec:     pulumi.String("serverless-system/codebuild/buildspec.yml"),
 			GitSubmodulesConfig: &codebuild.ProjectSourceGitSubmodulesConfigArgs{
 				FetchSubmodules: pulumi.Bool(true),
 			},
