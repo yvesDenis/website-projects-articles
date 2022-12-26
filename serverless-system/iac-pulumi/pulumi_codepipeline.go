@@ -194,10 +194,8 @@ func createInfrastructureCodepipeline(ctx *pulumi.Context) (*result_infra, error
 					"Resource": "*"
 					},
 					{
-					"Effect": "KMS Allow",
-					"Action": [
-						"kms:*"
-					],
+					"Effect": "Allow",
+					"Action": "kms:*",
 					"Resource": "*"
 					}
 				]
