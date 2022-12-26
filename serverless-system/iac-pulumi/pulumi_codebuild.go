@@ -16,7 +16,7 @@ type config_data struct {
 }
 
 func loadConfig(ctx *pulumi.Context) *config_data {
-	config := config.New(ctx, "aws")
+	config := config.New(ctx, "serverless")
 	return &config_data{
 		awsRegion: config.Get("region"),
 		accountId: config.Get("account"),
