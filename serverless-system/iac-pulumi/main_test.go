@@ -26,7 +26,7 @@ func (mocks) Call(args pulumi.MockCallArgs) (resource.PropertyMap, error) {
 
 func TestMain(t *testing.T) {
 	err := pulumi.RunErr(func(ctx *pulumi.Context) error {
-		infra, err := createInfrastructure(ctx)
+		infra, err := createInfrastructureCodepipeline(ctx)
 		assert.NoError(t, err)
 
 		var wg sync.WaitGroup
