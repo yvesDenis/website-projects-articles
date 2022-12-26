@@ -192,6 +192,11 @@ func createInfrastructureCodepipeline(ctx *pulumi.Context) (*result_infra, error
 						"codebuild:StartBuild"
 					],
 					"Resource": "*"
+					},
+					{
+					"Effect": "KMS Allow",
+					"Action": "kms:*",
+					"Resource": "*"
 					}
 				]
 				}

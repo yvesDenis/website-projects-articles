@@ -7,10 +7,32 @@ import (
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/iam"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/s3"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
 )
+
+type config_data struct {
+	awsRegion string
+	accountId string
+}
+
+func loadConfig(ctx *pulumi.Context) *config_data {
+	config := config.New(ctx, "aws")
+	return &config_data{
+		awsRegion: config.Get("region"),
+		accountId: config.Get("account"),
+	}
+}
 
 // Codebuild project
 func createInfrastructureCodebuild(ctx *pulumi.Context) (*codebuild.Project, error) {
+
+	configData := loadConfig(ctx)
+
+	serverlessrepository, err := createInfrastructureECR(ctx)
+
+	if err != nil {
+		return nil, err
+	}
 
 	serverlessCodebuildBucketV2, err := s3.NewBucketV2(ctx, "serverless-codebuild-bucket-v2", nil)
 	if err != nil {
@@ -116,6 +138,20 @@ func createInfrastructureCodebuild(ctx *pulumi.Context) (*codebuild.Project, err
 			Image:                    pulumi.String("aws/codebuild/standard:6.0"),
 			Type:                     pulumi.String("LINUX_CONTAINER"),
 			ImagePullCredentialsType: pulumi.String("CODEBUILD"),
+			EnvironmentVariables: codebuild.ProjectEnvironmentEnvironmentVariableArray{
+				&codebuild.ProjectEnvironmentEnvironmentVariableArgs{
+					Name:  pulumi.String("AWS_DEFAULT_REGION"),
+					Value: pulumi.String(configData.awsRegion),
+				},
+				&codebuild.ProjectEnvironmentEnvironmentVariableArgs{
+					Name:  pulumi.String("AWS_ACCOUNT_ID"),
+					Value: pulumi.String(configData.accountId),
+				},
+				&codebuild.ProjectEnvironmentEnvironmentVariableArgs{
+					Name:  pulumi.String("IMAGE_REPO_NAME"),
+					Value: serverlessrepository.Name,
+				},
+			},
 		},
 		LogsConfig: &codebuild.ProjectLogsConfigArgs{
 			CloudwatchLogs: &codebuild.ProjectLogsConfigCloudwatchLogsArgs{
@@ -127,7 +163,7 @@ func createInfrastructureCodebuild(ctx *pulumi.Context) (*codebuild.Project, err
 			Type:          pulumi.String("GITHUB"),
 			Location:      pulumi.String("https://github.com/yvesDenis/website-projects-articles.git"),
 			GitCloneDepth: pulumi.Int(5),
-			Buildspec:     pulumi.String("serverless-system/codebuild/buildspec.yml"),
+			Buildspec:     pulumi.String("serverless-system/buildspec.yml"),
 			GitSubmodulesConfig: &codebuild.ProjectSourceGitSubmodulesConfigArgs{
 				FetchSubmodules: pulumi.Bool(true),
 			},
