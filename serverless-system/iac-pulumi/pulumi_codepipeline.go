@@ -240,6 +240,17 @@ func createInfrastructureCodepipeline(ctx *pulumi.Context) (*result_infra, error
 					"Resource": [
 						"arn:aws:iam::516193157210:role/*"
             		]
+					},
+					{
+					"Effect": "Allow",
+					"Resource": [
+						"*"
+					],
+					"Action": [
+						"logs:CreateLogGroup",
+						"logs:CreateLogStream",
+						"logs:PutLogEvents"
+					]
 					}
 				]
 				}
