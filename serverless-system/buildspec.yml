@@ -27,3 +27,4 @@ phases:
 artifacts:
   files:
     - parameter-configuration.json
+    - template-serverless.yaml

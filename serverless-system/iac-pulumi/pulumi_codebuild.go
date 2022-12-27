@@ -109,10 +109,7 @@ func createInfrastructureCodebuild(ctx *pulumi.Context) (*codebuild.Project, err
 					"Action": [
 						"s3:*"
 					],
-					"Resource": [
-						"%v",
-						"%v/*"
-					]
+					"Resource": "*"
 					}
 				]
 				}`, serverlessCodebuildBucketV2Arn, serverlessCodebuildBucketV2Arn1), nil
