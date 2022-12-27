@@ -168,7 +168,7 @@ func createInfrastructureCodebuild(ctx *pulumi.Context) (*codebuild.Project, err
 				FetchSubmodules: pulumi.Bool(true),
 			},
 		},
-		SourceVersion: pulumi.String("serverless-system-deploy"),
+		SourceVersion: pulumi.String("serverless-system"),
 		Tags: pulumi.StringMap{
 			"Environment": pulumi.String("prod"),
 		},
