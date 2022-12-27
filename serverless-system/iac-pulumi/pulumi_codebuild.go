@@ -119,7 +119,7 @@ func createInfrastructureCodebuild(ctx *pulumi.Context) (*codebuild.Project, err
 					"Action": [
 						"ecr:*"
 					],
-					"Resource": "arn:aws:ecr:*:516193157210:repository/*"
+					"Resource": "*"
 					}
 				]
 				}`, nil

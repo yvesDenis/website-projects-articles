@@ -204,7 +204,7 @@ func createInfrastructureCodepipeline(ctx *pulumi.Context) (*result_infra, error
 					"Action": [
 						"ecr:*"
 					],
-					"Resource": "arn:aws:ecr:*:516193157210:repository/*"
+					"Resource": "*"
 					}
 				]
 				}
