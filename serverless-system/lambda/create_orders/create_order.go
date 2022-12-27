@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -21,7 +22,7 @@ type OrderRequest struct {
 	UserId       string    `json:"user_id"`
 	RestaurantId string    `json:"restaurant_id"`
 	Quantity     string    `json:"quantity"`
-	Id           int       `json:"id"`
+	Id           string    `json:"id"`
 	CreatedAt    time.Time `json:"created_at"`
 	OrderStatus  string    `json:"order_status"`
 }
@@ -62,7 +63,7 @@ func HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 
 	orderRequest.OrderStatus = DEFAULT_ORDER_STATUS
 	orderRequest.CreatedAt = time.Now()
-	orderRequest.Id = rand.Intn(100)
+	orderRequest.Id = strconv.Itoa(rand.Intn(100))
 
 	log.Println("Trying to marshall the order request...")
 	orderMarshall, err := dynamodbattribute.MarshalMap(orderRequest)
