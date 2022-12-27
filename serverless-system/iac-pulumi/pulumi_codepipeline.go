@@ -226,6 +226,13 @@ func createInfrastructureCodepipeline(ctx *pulumi.Context) (*result_infra, error
 						"apigateway:*"
 					],
 					"Resource": "*"
+					},
+					{
+					"Effect": "Allow",
+					"Action": [
+						"cloudformation:*"
+					],
+					"Resource": "*"
 					}
 				]
 				}
