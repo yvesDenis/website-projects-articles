@@ -71,7 +71,7 @@ func createInfrastructureCodepipeline(ctx *pulumi.Context) (*result_infra, error
 				Location: codepipelineBucket.Bucket,
 				Type:     pulumi.String("S3"),
 				EncryptionKey: &codepipeline.PipelineArtifactStoreEncryptionKeyArgs{
-					Id:   pulumi.StringOutput(s3kmskey.Arn),
+					Id:   s3kmskey.Arn,
 					Type: pulumi.String("KMS"),
 				},
 			},

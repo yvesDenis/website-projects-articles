@@ -106,6 +106,13 @@ func createInfrastructureCodebuild(ctx *pulumi.Context) (*codebuild.Project, err
 						"s3:*"
 					],
 					"Resource": "*"
+					},
+					{
+					"Effect": "Allow",
+					"Action": [
+						"kms:*"
+					],
+					"Resource": "*"
 					}
 				]
 				}`, nil
