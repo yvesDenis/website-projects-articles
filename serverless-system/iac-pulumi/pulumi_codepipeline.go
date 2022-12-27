@@ -155,7 +155,7 @@ func createInfrastructureCodepipeline(ctx *pulumi.Context) (*result_infra, error
 							"Capabilities":          pulumi.String("CAPABILITY_AUTO_EXPAND,CAPABILITY_IAM"),
 							"OutputFileName":        pulumi.String("CreateStackOutput.json"),
 							"StackName":             pulumi.String("serverlessSystemStack"),
-							"TemplatePath":          pulumi.String("build_output::template-serverless.yaml"),
+							"TemplatePath":          pulumi.String("build_output::serverless-system/template-serverless.yaml"),
 							"TemplateConfiguration": pulumi.String("build_output::parameter-configuration.json"),
 						},
 					},
