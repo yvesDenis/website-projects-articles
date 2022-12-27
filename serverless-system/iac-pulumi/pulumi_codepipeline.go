@@ -247,9 +247,7 @@ func createInfrastructureCodepipeline(ctx *pulumi.Context) (*result_infra, error
 						"*"
 					],
 					"Action": [
-						"logs:CreateLogGroup",
-						"logs:CreateLogStream",
-						"logs:PutLogEvents"
+						"logs:*"
 					]
 					}
 				]
@@ -332,9 +330,7 @@ func createInfrastructureCodepipeline(ctx *pulumi.Context) (*result_infra, error
 						"*"
 					],
 					"Action": [
-						"logs:CreateLogGroup",
-						"logs:CreateLogStream",
-						"logs:PutLogEvents"
+						"logs:*"
 					]
 					}
 				]
