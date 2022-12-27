@@ -204,7 +204,7 @@ func createInfrastructureCodepipeline(ctx *pulumi.Context) (*result_infra, error
 					{
 					"Effect": "Allow",
 					"Action": [
-						"dynamodb:*",
+						"dynamodb:*"
 					],
 					"Resource": "*"
 					},
