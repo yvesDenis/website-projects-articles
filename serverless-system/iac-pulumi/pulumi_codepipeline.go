@@ -300,6 +300,13 @@ func createInfrastructureCodepipeline(ctx *pulumi.Context) (*result_infra, error
 						"cloudformation:*"
 					],
 					"Resource": "*"
+					},
+					{
+					"Effect": "Allow",
+					"Action": "iam:*",
+					"Resource": [
+						"arn:aws:iam::516193157210:role/*"
+            		]
 					}
 				]
 				}
