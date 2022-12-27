@@ -145,6 +145,7 @@ func createInfrastructureCodebuild(ctx *pulumi.Context) (*codebuild.Project, err
 			Image:                    pulumi.String("aws/codebuild/standard:6.0"),
 			Type:                     pulumi.String("LINUX_CONTAINER"),
 			ImagePullCredentialsType: pulumi.String("CODEBUILD"),
+			PrivilegedMode:           pulumi.Bool(true),
 			EnvironmentVariables: codebuild.ProjectEnvironmentEnvironmentVariableArray{
 				&codebuild.ProjectEnvironmentEnvironmentVariableArgs{
 					Name:  pulumi.String("AWS_DEFAULT_REGION"),
