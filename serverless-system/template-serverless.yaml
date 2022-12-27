@@ -129,7 +129,7 @@ Resources:
                 Effect: Allow
               - Action:
                   - 'dynamodb:PutItem'
-                Resource: !GetAtt [DynamoDBTable,Arn]
+                Resource: !GetAtt [OrderTable,Arn]
                 Effect: Allow
       AssumeRolePolicyDocument:
         Version: 2012-10-17
