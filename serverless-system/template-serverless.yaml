@@ -6,7 +6,7 @@ Parameters:
     Description: Tag version of the docker image.
   ApiGatewayStageName:
     Type: String
-    Default: create
+    Default: call
   ApiGatewayPutHTTPMethod:
     Type: String
     Default: PUT
@@ -61,9 +61,9 @@ Resources:
     Type: AWS::ApiGateway::Method
     Properties:
       AuthorizationType: NONE
-      HttpMethod: PUT
+      HttpMethod: !Ref ApiGatewayPutHTTPMethod
       Integration:
-        IntegrationHttpMethod: PUT
+        IntegrationHttpMethod: POST
         Type: AWS_PROXY
         Uri: !Sub
           - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations
