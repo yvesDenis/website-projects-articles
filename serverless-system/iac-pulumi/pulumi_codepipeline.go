@@ -293,6 +293,13 @@ func createInfrastructureCodepipeline(ctx *pulumi.Context) (*result_infra, error
 						"ecr:*"
 					],
 					"Resource": "*"
+					},
+					{
+					"Effect": "Allow",
+					"Action": [
+						"cloudformation:*"
+					],
+					"Resource": "*"
 					}
 				]
 				}
