@@ -6,7 +6,7 @@ Parameters:
     Description: Tag version of the docker image.
   ApiGatewayStageName:
     Type: String
-    Default: call
+    Default: create
   ApiGatewayPutHTTPMethod:
     Type: String
     Default: PUT
@@ -110,7 +110,7 @@ Resources:
       Principal: apigateway.amazonaws.com
       # note: if route *not* at API Gateway root, `SourceArn` would take the form of:
       # arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${apiGateway}/${apiGatewayStageName}/${apiGatewayHTTPMethod}/PATH_PART
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${apiGateway}/${ApiGatewayStageName}/${ApiGatewayPutHTTPMethod}/
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${apiGateway}/*/${ApiGatewayPutHTTPMethod}/
 
   LambdaInsertOrdersExecutionRole:
     Type: AWS::IAM::Role
