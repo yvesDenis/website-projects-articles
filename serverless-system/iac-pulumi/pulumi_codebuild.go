@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/codebuild"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/iam"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/s3"
@@ -66,9 +64,7 @@ func createInfrastructureCodebuild(ctx *pulumi.Context) (*codebuild.Project, err
 	_, err = iam.NewRolePolicy(ctx, "serverlessCodebuildRolePolicy", &iam.RolePolicyArgs{
 		Role: serverlesscodebuildrole.Name,
 		Policy: pulumi.All(serverlessCodebuildBucketV2.Arn, serverlessCodebuildBucketV2.Arn).ApplyT(func(_args []interface{}) (string, error) {
-			serverlessCodebuildBucketV2Arn := _args[0].(string)
-			serverlessCodebuildBucketV2Arn1 := _args[1].(string)
-			return fmt.Sprintf(`{
+			return `{
 				"Version": "2012-10-17",
 				"Statement": [
 					{
@@ -112,7 +108,7 @@ func createInfrastructureCodebuild(ctx *pulumi.Context) (*codebuild.Project, err
 					"Resource": "*"
 					}
 				]
-				}`, serverlessCodebuildBucketV2Arn, serverlessCodebuildBucketV2Arn1), nil
+				}`, nil
 		}).(pulumi.StringOutput),
 	})
 	if err != nil {
