@@ -52,6 +52,25 @@ func createInfrastructureCodepipeline(ctx *pulumi.Context) (*result_infra, error
 			}
 			`),
 	})
+
+	if err != nil {
+		return nil, err
+	}
+	cloudformationRole, err := iam.NewRole(ctx, "cloudformationRole", &iam.RoleArgs{
+		AssumeRolePolicy: pulumi.Any(`{
+			"Version": "2012-10-17",
+			"Statement": [
+				{
+				"Effect": "Allow",
+				"Principal": {
+					"Service": "cloudformation.amazonaws.com"
+				},
+				"Action": "sts:AssumeRole"
+				}
+			]
+			}
+			`),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -132,6 +151,7 @@ func createInfrastructureCodepipeline(ctx *pulumi.Context) (*result_infra, error
 						Version: pulumi.String("1"),
 						Configuration: pulumi.StringMap{
 							"ActionMode":            pulumi.String("REPLACE_ON_FAILURE"),
+							"RoleArn":               cloudformationRole.Arn,
 							"Capabilities":          pulumi.String("CAPABILITY_AUTO_EXPAND,CAPABILITY_IAM"),
 							"OutputFileName":        pulumi.String("CreateStackOutput.json"),
 							"StackName":             pulumi.String("serverlessSystemStack"),
@@ -156,6 +176,67 @@ func createInfrastructureCodepipeline(ctx *pulumi.Context) (*result_infra, error
 	if err != nil {
 		return nil, err
 	}
+
+	_, err = iam.NewRolePolicy(ctx, "cloudformationRolePolicy", &iam.RolePolicyArgs{
+		Role: cloudformationRole.ID(),
+		Policy: pulumi.All(codepipelineBucket.Arn, codepipelineBucket.Arn, serverlessSystemConnection.Arn).ApplyT(func(_args []interface{}) (string, error) {
+			return `{
+				"Version": "2012-10-17",
+				"Statement": [
+					{
+					"Effect":"Allow",
+					"Action": [
+						"s3:GetObject",
+						"s3:GetObjectVersion",
+						"s3:GetBucketVersioning",
+						"s3:PutObjectAcl",
+						"s3:PutObject"
+					],
+					"Resource": "*"
+					},
+					{
+					"Effect": "Allow",
+					"Action": [
+						"lambda:*"
+					],
+					"Resource": "*"
+					},
+					{
+					"Effect": "Allow",
+					"Action": [
+						"dynamodb:*",
+					],
+					"Resource": "*"
+					},
+					{
+					"Effect": "Allow",
+					"Action": "kms:*",
+					"Resource": "*"
+					},
+					{
+					"Effect": "Allow",
+					"Action": [
+						"ecr:*"
+					],
+					"Resource": "*"
+					},
+					{
+					"Effect": "Allow",
+					"Action": [
+						"apigateway:*"
+					],
+					"Resource": "*"
+					}
+				]
+				}
+				`, nil
+		}).(pulumi.StringOutput),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
 	_, err = iam.NewRolePolicy(ctx, "serverlessCodepipelinePolicy", &iam.RolePolicyArgs{
 		Role: codepipelineRole.ID(),
 		Policy: pulumi.All(codepipelineBucket.Arn, codepipelineBucket.Arn, serverlessSystemConnection.Arn).ApplyT(func(_args []interface{}) (string, error) {
