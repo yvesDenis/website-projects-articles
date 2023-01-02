@@ -10,7 +10,9 @@ import (
 // ECR Repository project
 func createInfrastructureECR(ctx *pulumi.Context, repoName string) (*ecr.Repository, error) {
 
-	serverlessrepository, err := ecr.NewRepository(ctx, "serverlessrepository", &ecr.RepositoryArgs{
+	repository_name := fmt.Sprintf("serverlessrepository_%v", repoName)
+
+	serverlessrepository, err := ecr.NewRepository(ctx, repository_name, &ecr.RepositoryArgs{
 		Name:               pulumi.String(repoName),
 		ImageTagMutability: pulumi.String("MUTABLE"),
 		Tags: pulumi.StringMap{
