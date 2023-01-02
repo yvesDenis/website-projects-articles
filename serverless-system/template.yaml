@@ -1,0 +1,183 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Template for the serverless-system application
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 5
+    MemorySize: 128
+    Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+      Variables:
+        ORDER_TABLE: !Ref TableName
+        AWS_REGION: ca-central-1
+
+Parameters:
+  TagVersion:
+    Type: String
+    Description: Commit Hash.
+  ApiGatewayStageName:
+    Type: String
+    Default: Dev
+  TableName:
+    Type: String
+    Default: order-table
+
+Resources: 
+  OrderTable: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - AttributeName: "user_id"
+          AttributeType: "S"
+        - AttributeName: "id"
+          AttributeType: "S"
+      KeySchema: 
+        - AttributeName: user_id
+          KeyType: HASH
+        - AttributeName: id
+          KeyType: RANGE
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+      TableName: !Ref TableName
+
+  CreateOrderFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      PackageType: Image
+      Policies:
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:GetItem
+              - dynamodb:Query 
+              - dynamodb:Scan
+            Resource:
+              - !Sub 
+                - 'arn:aws:dynamodb:*:*:table/${TableName}'
+                - { Table: !Ref OrderTable }
+          - Effect: Allow
+            Action:
+              - logs:*
+            Resource:
+              - "*" 
+    Metadata:
+      DockerTag: !Ref TagVersion
+      DockerContext: ./lambda/create_orders
+      Dockerfile: Dockerfile
+
+  GetOrderFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      PackageType: Image
+      Policies:
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:GetItem
+              - dynamodb:Query 
+              - dynamodb:Scan
+            Resource:
+              - !Sub 
+                - 'arn:aws:dynamodb:*:*:table/${Table}'
+                - { Table: !Ref OrderTable }
+          - Effect: Allow
+            Action:
+              - logs:*
+            Resource:
+              - "*" 
+    Metadata:
+      DockerTag: !Ref TagVersion
+      DockerContext: ./lambda/get_orders
+      Dockerfile: Dockerfile
+
+  DeleteOrderFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      PackageType: Image
+      Policies:
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:GetItem
+              - dynamodb:Query 
+              - dynamodb:Scan
+            Resource:
+              - !Sub 
+                - 'arn:aws:dynamodb:*:*:table/${Table}'
+                - { Table: !Ref OrderTable }
+          - Effect: Allow
+            Action:
+              - logs:*
+            Resource:
+              - "*" 
+    Metadata:
+      DockerTag: !Ref TagVersion
+      DockerContext: ./lambda/delete_orders
+      Dockerfile: Dockerfile
+
+  OrderApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref ApiGatewayStageName
+      Cors:
+        AllowMethods: "'POST, GET, UPDATE, DELETE'"
+        AllowHeaders: "'X-Forwarded-For'"
+        AllowOrigin: "'*'"
+        MaxAge: "'600'"
+      DefinitionBody:
+        'Fn::Transform':
+          Name: 'AWS::Include'
+          Parameters:
+            Location: './api_template.yaml'
+
+  ApiGwExecutionRole: 
+    Type: "AWS::IAM::Role"
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - Effect: "Allow"
+            Principal: 
+              Service: 
+                - "apigateway.amazonaws.com"
+                - "lambda.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+      Path: "/"
+
+  ApiGwExecutionPolicy: 
+    Type: "AWS::IAM::Policy"
+    Properties: 
+      PolicyName: "apigw-execution-policy"
+      PolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          Action:
+            - lambda:*
+          Effect: Allow
+          Resource:
+            - !GetAtt GetOrderFunction.Arn
+            - !GetAtt DeleteOrderFunction.Arn
+            - !GetAtt CreateOrderFunction.Arn
+      Roles: 
+        - Ref: "ApiGwExecutionRole"
+
+Outputs:
+
+  DynamoDBTableName:
+    Description: "DynamoDB Table Name"
+    Value: !Ref OrderTable
+
+  apiGatewayInvokeURL:
+    Value: !Sub https://${apiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiGatewayStageName}/orders/
+
+  createOrderLambdaArn:
+    Value: !GetAtt [createOrdersFunction,Arn]
+  
+  getOrderLambdaArn:
+    Value: !GetAtt [getOrdersFunction,Arn]
+
+  deleteOrderLambdaArn:
+    Value: !GetAtt [deleteOrdersFunction,Arn]

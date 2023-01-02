@@ -5,23 +5,22 @@ phases:
     commands:
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - IMAGE_TAG=${COMMIT_HASH:=latest}
+      - IMAGE_TAG=${CODEBUILD_RESOLVED_SOURCE_VERSION:=latest}
+      - IMAGE_REPO_CREATE_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_CREATE:$IMAGE_TAG
+      - IMAGE_REPO_GET_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_GET:$IMAGE_TAG
+      - IMAGE_REPO_DELETE_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_DELETE:$IMAGE_TAG
   build:
     commands:
       - echo Build started on `date`
-      - echo Building the create_orders lambda Docker image...          
-      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG -f ./serverless-system/lambda/create_orders/Dockerfile .
-      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG      
+      - echo Moving into serverless-system folder... 
+      - cd ./serverless-system         
+      - echo Building serverless resources... 
+      - sam build --parameter-overrides ParameterKey=TagVersion, ParameterValue=$IMAGE_TAG --parallel
   post_build:
     commands:
       - echo Build completed on `date`
-      - echo Pushing the create_orders lambda Docker image...
-      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
-      - echo Writing image definitions file...
-      - printf '{"Parameters":{"CreateOrderImageTagParameter":"%s"}}' $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG > parameter-configuration.json
-
+      - echo Packaging serverless resources...
+      - sam package --region $AWS_DEFAULT_REGION --output-template-file packaged-template.yaml --image-repositories CreateOrderFunction=$IMAGE_REPO_CREATE_URL --image-repositories GetOrderFunction=$IMAGE_REPO_GET_URL --image-repositories DeleteOrderFunction=$IMAGE_REPO_DELETE_URL --resolve-s3   
 artifacts:
   files:
-    - parameter-configuration.json
-    - serverless-system/template-serverless.yaml
+    - serverless-system/packaged-template.yaml

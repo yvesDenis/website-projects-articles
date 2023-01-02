@@ -1,0 +1,52 @@
+---
+swagger: "2.0"
+info:
+  version: "1.0"
+  title: "order-app"
+basePath: "/Dev"
+schemes:
+- "https"
+paths:
+  /orders:
+    get:
+      responses: {}
+      x-amazon-apigateway-integration:
+        credentials: 
+          Fn::GetAtt: [ ApiGwExecutionRole, Arn ]
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetOrderFunction.Arn}/invocations
+        passthroughBehavior: "when_no_match"
+    put:
+      produces:
+      - "application/json"
+      parameters:
+      - name: "orderId"
+        in: "path"
+        required: true
+        type: "string"
+      responses: {}
+      x-amazon-apigateway-integration:
+        credentials: 
+          Fn::GetAtt: [ ApiGwExecutionRole, Arn ]
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateOrderFunction.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+        passthroughBehavior: "when_no_match"
+        type: "aws_proxy"
+    /order/{userId}/id/{id}:
+      delete:
+        responses: {}
+        x-amazon-apigateway-integration:
+          credentials: 
+            Fn::GetAtt: [ ApiGwExecutionRole, Arn ]
+          type: "aws_proxy"
+          httpMethod: "POST"
+          uri:
+            Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteOrderFunction.Arn}/invocations
+          passthroughBehavior: "when_no_match"
+

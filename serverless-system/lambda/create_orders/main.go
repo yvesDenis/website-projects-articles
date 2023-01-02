@@ -32,6 +32,7 @@ const DEFAULT_ORDER_STATUS = "PENDING"
 var (
 	tableName      string
 	awsRegion      string
+	endpoint       string
 	dynamodbCLient *dynamodb.DynamoDB
 )
 
@@ -41,9 +42,16 @@ func init() {
 	log.Printf("TABLE NAME : %v", tableName)
 	awsRegion = os.Getenv("AWS_REGION")
 	log.Printf("AWS REGION : %v", awsRegion)
+	awsLocal := os.Getenv("AWS_LOCAL")
+	log.Printf("AWS LOCAL : %v", awsLocal)
+
+	if awsLocal == "true" {
+		endpoint = "http://docker.for.mac.localhost:8000"
+	}
 	awsSession, err := session.NewSession(&aws.Config{
-		Region: aws.String(awsRegion)},
-	)
+		Region:   aws.String(awsRegion),
+		Endpoint: aws.String(endpoint),
+	})
 
 	if err != nil {
 		panic("Unable to initalize the configuration")

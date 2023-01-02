@@ -8,10 +8,10 @@ import (
 )
 
 // ECR Repository project
-func createInfrastructureECR(ctx *pulumi.Context) (*ecr.Repository, error) {
+func createInfrastructureECR(ctx *pulumi.Context, repoName string) (*ecr.Repository, error) {
 
 	serverlessrepository, err := ecr.NewRepository(ctx, "serverlessrepository", &ecr.RepositoryArgs{
-		Name:               pulumi.String("serverlessrepository"),
+		Name:               pulumi.String(repoName),
 		ImageTagMutability: pulumi.String("MUTABLE"),
 		Tags: pulumi.StringMap{
 			"Environment": pulumi.String("prod"),

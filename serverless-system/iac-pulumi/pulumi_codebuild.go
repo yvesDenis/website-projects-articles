@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/codebuild"
+	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ecr"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/iam"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/s3"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -21,15 +22,22 @@ func loadConfig(ctx *pulumi.Context) *config_data {
 	}
 }
 
+var (
+	ecr_repo_name    = []string{"createorders,getorders,deleteorder"}
+	ecr_resource_map []*ecr.Repository
+)
+
 // Codebuild project
 func createInfrastructureCodebuild(ctx *pulumi.Context) (*codebuild.Project, error) {
 
 	configData := loadConfig(ctx)
 
-	serverlessrepository, err := createInfrastructureECR(ctx)
-
-	if err != nil {
-		return nil, err
+	for key, repoName := range ecr_repo_name {
+		repository, err := createInfrastructureECR(ctx, repoName)
+		if err != nil {
+			return nil, err
+		}
+		ecr_resource_map[key] = repository
 	}
 
 	serverlessCodebuildBucketV2, err := s3.NewBucketV2(ctx, "serverless-codebuild-bucket-v2", nil)
@@ -156,8 +164,16 @@ func createInfrastructureCodebuild(ctx *pulumi.Context) (*codebuild.Project, err
 					Value: pulumi.String(configData.accountId),
 				},
 				&codebuild.ProjectEnvironmentEnvironmentVariableArgs{
-					Name:  pulumi.String("IMAGE_REPO_NAME"),
-					Value: serverlessrepository.Name,
+					Name:  pulumi.String("IMAGE_REPO_CREATE"),
+					Value: ecr_resource_map[0].Name,
+				},
+				&codebuild.ProjectEnvironmentEnvironmentVariableArgs{
+					Name:  pulumi.String("IMAGE_REPO_GET"),
+					Value: ecr_resource_map[1].Name,
+				},
+				&codebuild.ProjectEnvironmentEnvironmentVariableArgs{
+					Name:  pulumi.String("IMAGE_REPO_DELETE"),
+					Value: ecr_resource_map[2].Name,
 				},
 			},
 		},
