@@ -128,6 +128,13 @@ func createInfrastructureCodebuild(ctx *pulumi.Context) (*codebuild.Project, err
 						"ecr:*"
 					],
 					"Resource": "*"
+					},
+					{
+					"Effect": "Allow",
+					"Action": [
+						"cloudformation:*"
+					],
+					"Resource": "*"
 					}
 				]
 				}`, nil
