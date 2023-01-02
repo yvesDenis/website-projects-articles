@@ -172,13 +172,13 @@ Outputs:
     Value: !Ref OrderTable
 
   apiGatewayInvokeURL:
-    Value: !Sub https://${apiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiGatewayStageName}/orders/
+    Value: !Sub https://${OrderApi}.execute-api.${AWS::Region}.amazonaws.com/${ApiGatewayStageName}/orders/
 
   createOrderLambdaArn:
-    Value: !GetAtt [createOrdersFunction,Arn]
+    Value: !GetAtt [CreateOrderFunction,Arn]
   
   getOrderLambdaArn:
-    Value: !GetAtt [getOrdersFunction,Arn]
+    Value: !GetAtt [GetOrderFunction,Arn]
 
   deleteOrderLambdaArn:
-    Value: !GetAtt [deleteOrdersFunction,Arn]
+    Value: !GetAtt [DeleteOrderFunction,Arn]
