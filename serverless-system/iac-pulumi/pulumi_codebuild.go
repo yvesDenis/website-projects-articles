@@ -152,8 +152,11 @@ func createInfrastructureCodebuild(ctx *pulumi.Context) (*codebuild.Project, err
 			Type: pulumi.String("NO_ARTIFACTS"),
 		},
 		Cache: &codebuild.ProjectCacheArgs{
-			Type:     pulumi.String("S3"),
-			Location: serverlessCodebuildBucketV2.Bucket,
+			Type: pulumi.String("LOCAL"),
+			Modes: pulumi.StringArray{
+				pulumi.String("LOCAL_DOCKER_LAYER_CACHE"),
+				pulumi.String("LOCAL_SOURCE_CACHE"),
+			},
 		},
 		Environment: &codebuild.ProjectEnvironmentArgs{
 			ComputeType:              pulumi.String("BUILD_GENERAL1_SMALL"),

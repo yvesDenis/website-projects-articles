@@ -45,7 +45,7 @@ func init() {
 func HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
 	orderId := request.PathParameters["id"]
-	userId := request.PathParameters["user_id"]
+	userId := request.PathParameters["userId"]
 	log.Printf("Order id: %v and user id: %v to delete", orderId, userId)
 
 	input := &dynamodb.DeleteItemInput{

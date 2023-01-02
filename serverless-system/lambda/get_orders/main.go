@@ -85,7 +85,8 @@ func HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 	}
 	log.Println("Retrieval Items succeeded!")
 	return events.APIGatewayProxyResponse{
-		Body: string(result_marshalled),
+		Body:       string(result_marshalled),
+		StatusCode: http.StatusOK,
 	}, nil
 }
 
