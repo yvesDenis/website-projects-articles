@@ -18,8 +18,8 @@ paths:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetOrderFunction.Arn}/invocations
         responses:
-            default:
-              statusCode: "200"
+          default:
+            statusCode: "200"
         passthroughBehavior: "when_no_match"
     put:
       produces:
