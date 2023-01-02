@@ -51,8 +51,8 @@ paths:
         httpMethod: "POST"
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteOrderFunction.Arn}/invocations
-          responses:
-            default:
-              statusCode: "200"
+        responses:
+          default:
+            statusCode: "200"
         passthroughBehavior: "when_no_match"
 
