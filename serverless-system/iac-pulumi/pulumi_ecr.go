@@ -21,7 +21,10 @@ func createInfrastructureECR(ctx *pulumi.Context, repoName string) (*ecr.Reposit
 	if err != nil {
 		return nil, err
 	}
-	_, err = ecr.NewRepositoryPolicy(ctx, "serverlessrepositorypolicy", &ecr.RepositoryPolicyArgs{
+
+	policy_name := fmt.Sprintf("serverlessrepositorypolicy_%v", repoName)
+
+	_, err = ecr.NewRepositoryPolicy(ctx, policy_name, &ecr.RepositoryPolicyArgs{
 		Repository: serverlessrepository.Name,
 		Policy: pulumi.Any(fmt.Sprintf(`{
 			"Version": "2008-10-17",
