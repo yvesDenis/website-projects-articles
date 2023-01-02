@@ -38,15 +38,15 @@ paths:
             statusCode: "201"
         passthroughBehavior: "when_no_match"
         type: "aws_proxy"
-    /order/{userId}/id/{id}:
-      delete:
-        responses: {}
-        x-amazon-apigateway-integration:
-          credentials: 
-            Fn::GetAtt: [ ApiGwExecutionRole, Arn ]
-          type: "aws_proxy"
-          httpMethod: "POST"
-          uri:
-            Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteOrderFunction.Arn}/invocations
-          passthroughBehavior: "when_no_match"
+  /order/{userId}/id/{id}:
+    delete:
+      responses: {}
+      x-amazon-apigateway-integration:
+        credentials: 
+          Fn::GetAtt: [ ApiGwExecutionRole, Arn ]
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteOrderFunction.Arn}/invocations
+        passthroughBehavior: "when_no_match"
 

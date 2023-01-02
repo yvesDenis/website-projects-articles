@@ -53,6 +53,7 @@ Resources:
               - dynamodb:GetItem
               - dynamodb:Query 
               - dynamodb:Scan
+              - dynamodb:PutItem
             Resource:
               - !Sub 
                 - 'arn:aws:dynamodb:*:*:table/${TableName}'
@@ -103,6 +104,7 @@ Resources:
               - dynamodb:GetItem
               - dynamodb:Query 
               - dynamodb:Scan
+              - dynamodb:DeleteItem
             Resource:
               - !Sub 
                 - 'arn:aws:dynamodb:*:*:table/${Table}'
