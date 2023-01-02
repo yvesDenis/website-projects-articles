@@ -23,8 +23,8 @@ func loadConfig(ctx *pulumi.Context) *config_data {
 }
 
 var (
-	ecr_repo_name    = []string{"createorders,getorders,deleteorder"}
-	ecr_resource_map []*ecr.Repository
+	ecr_repo_name    = []string{"createorders", "getorders", "deleteorder"}
+	ecr_resource_map [3]*ecr.Repository
 )
 
 // Codebuild project
