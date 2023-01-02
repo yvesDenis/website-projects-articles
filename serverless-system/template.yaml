@@ -16,6 +16,7 @@ Parameters:
   TagVersion:
     Type: String
     Description: Commit Hash.
+    Default: latest
   ApiGatewayStageName:
     Type: String
     Default: Dev

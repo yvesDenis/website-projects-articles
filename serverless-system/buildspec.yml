@@ -23,4 +23,4 @@ phases:
       - sam package --region $AWS_DEFAULT_REGION --output-template-file packaged-template.yaml --image-repositories CreateOrderFunction=$IMAGE_REPO_CREATE_URL --image-repositories GetOrderFunction=$IMAGE_REPO_GET_URL --image-repositories DeleteOrderFunction=$IMAGE_REPO_DELETE_URL --resolve-s3   
 artifacts:
   files:
-    - serverless-system/packaged-template.yaml
+    - serverless-system/*
