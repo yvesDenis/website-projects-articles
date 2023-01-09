@@ -3,18 +3,15 @@ package main
 import (
 	"encoding/json"
 	"log"
-	"math/rand"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/sfn"
 )
 
 // Create struct to hold info about new item
@@ -27,19 +24,23 @@ type OrderRequest struct {
 	OrderStatus  string    `json:"order_status"`
 }
 
+type Response struct {
+	StatusCode int
+}
+
 const DEFAULT_ORDER_STATUS = "PENDING"
 
 var (
-	tableName      string
-	awsRegion      string
-	endpoint       string
-	dynamodbCLient *dynamodb.DynamoDB
+	stateMachineArn    string
+	awsRegion          string
+	endpoint           string
+	stepfunctionClient *sfn.SFN
 )
 
 func init() {
 
-	tableName = os.Getenv("ORDER_TABLE")
-	log.Printf("TABLE NAME : %v", tableName)
+	stateMachineArn = os.Getenv("STATE_MACHINE_ARN")
+	log.Printf("STATE_MACHINE_ARN : %v", stateMachineArn)
 	awsRegion = os.Getenv("AWS_REGION")
 	log.Printf("AWS REGION : %v", awsRegion)
 	awsLocal := os.Getenv("AWS_LOCAL")
@@ -56,53 +57,58 @@ func init() {
 	if err != nil {
 		panic("Unable to initalize the configuration")
 	}
-	// Create DynamoDB client
-	dynamodbCLient = dynamodb.New(awsSession)
+	// Create Stepfunction client
+	stepfunctionClient = sfn.New(awsSession)
 }
 
-func HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func HandleRequest(request events.SQSEvent) (Response, error) {
 
 	var orderRequest OrderRequest
+	message := request.Records[0]
 
-	log.Printf("Order request from the API GATEWAY : %v", request.Body)
-	if err := json.Unmarshal([]byte(request.Body), &orderRequest); err != nil {
+	log.Printf("Order request from SQS Queue : %v", message.Body)
+	if err := json.Unmarshal([]byte(message.Body), &orderRequest); err != nil {
 		return handleError(err)
 	}
 
 	orderRequest.OrderStatus = DEFAULT_ORDER_STATUS
 	orderRequest.CreatedAt = time.Now()
-	orderRequest.Id = strconv.Itoa(rand.Intn(100))
+	orderRequest.Id = message.MessageId
 
-	log.Println("Trying to marshall the order request...")
-	orderMarshall, err := dynamodbattribute.MarshalMap(orderRequest)
-	if err != nil {
-		return handleError(err)
-	}
+	log.Println("Trying to serialize order request...")
 
-	input := &dynamodb.PutItemInput{
-		Item:      orderMarshall,
-		TableName: aws.String(tableName),
-	}
-
-	log.Println("Trying to save the order item in the dynamoDb table...")
-	_, err = dynamodbCLient.PutItem(input)
+	orderRequestBytes, err := json.Marshal(orderRequest)
 
 	if err != nil {
 		return handleError(err)
 	}
 
-	log.Printf("Order item id %v saved!", orderRequest.Id)
+	bytes := string(orderRequestBytes)
 
-	return events.APIGatewayProxyResponse{
-		StatusCode: http.StatusCreated,
+	log.Printf("Start stepfunction execution with SQS message id %v ...", message.MessageId)
+
+	startExecutionInput := sfn.StartExecutionInput{
+		Input:           &bytes,
+		Name:            &message.MessageId,
+		StateMachineArn: &stateMachineArn,
+	}
+
+	startExecutionOutput, err := stepfunctionClient.StartExecution(&startExecutionInput)
+	if err != nil {
+		return handleError(err)
+	}
+
+	log.Printf("Stepfunction execution ARN : %v , started on %v ", *startExecutionOutput.ExecutionArn, *startExecutionOutput.StartDate)
+
+	return Response{
+		StatusCode: http.StatusAccepted,
 	}, nil
 }
 
-func handleError(err error) (events.APIGatewayProxyResponse, error) {
+func handleError(err error) (Response, error) {
 	log.Panicf("unable to process request %v", err)
-	return events.APIGatewayProxyResponse{
+	return Response{
 		StatusCode: http.StatusInternalServerError,
-		Body:       http.StatusText(http.StatusInternalServerError),
 	}, nil
 }
 
