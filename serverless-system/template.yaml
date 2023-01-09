@@ -24,6 +24,11 @@ Parameters:
     Default: order-table
 
 Resources: 
+
+##########################################################################
+#             DYNAMODB TABLE                                             # 
+##########################################################################
+
   OrderTable: 
     Type: AWS::DynamoDB::Table
     Properties: 
@@ -42,31 +47,41 @@ Resources:
         WriteCapacityUnits: "5"
       TableName: !Ref TableName
 
+##########################################################################
+#             LAMBDA  GROUP ORDER MANAGEMENT                             # 
+##########################################################################
+
   CreateOrderFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       PackageType: Image
+      Events:
+        OrderSQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt OrderQueue.Arn
+            BatchSize: 10
       Policies:
-        Statement:
-          - Effect: Allow
-            Action:
-              - dynamodb:GetItem
-              - dynamodb:Query 
-              - dynamodb:Scan
-              - dynamodb:PutItem
-            Resource:
-              - !Sub 
-                - 'arn:aws:dynamodb:*:*:table/${TableName}'
-                - { Table: !Ref OrderTable }
+        - StepFunctionsExecutionPolicy:
+            StateMachineName:
+              !Ref OrderStateMachine
+        - Statement:
           - Effect: Allow
             Action:
               - logs:*
             Resource:
               - "*" 
+      Environment: 
+        STATE_MACHINE_ARN: !Ref OrderStateMachine
     Metadata:
       DockerTag: !Ref TagVersion
       DockerContext: ./lambda/order-management/create_orders
       Dockerfile: Dockerfile
+
+
+##########################################################################
+#             LAMBDA  GROUP SYNC-OPERATIONS                              # 
+##########################################################################
 
   GetOrderFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -119,6 +134,36 @@ Resources:
       DockerContext: ./lambda/sync-operations/delete_orders
       Dockerfile: Dockerfile
 
+  UpdateOrderFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      PackageType: Image
+      Policies:
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:GetItem
+              - dynamodb:Query 
+              - dynamodb:Scan
+              - dynamodb:DeleteItem
+            Resource:
+              - !Sub 
+                - 'arn:aws:dynamodb:*:*:table/${Table}'
+                - { Table: !Ref OrderTable }
+          - Effect: Allow
+            Action:
+              - logs:*
+            Resource:
+              - "*" 
+    Metadata:
+      DockerTag: !Ref TagVersion
+      DockerContext: ./lambda/sync-operations/update_orders
+      Dockerfile: Dockerfile
+
+##########################################################################
+#           API GATEWAY                                                  # 
+##########################################################################
+
   OrderApi:
     Type: AWS::Serverless::Api
     Properties:
@@ -133,19 +178,6 @@ Resources:
           Name: 'AWS::Include'
           Parameters:
             Location: './api_template.yaml'
-
-  OrderQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: "OrderQueue"
-      RedrivePolicy:
-      deadLetterTargetArn: !GetAtt [OrderDLQueue,Arn]
-      maxReceiveCount: 3
-
-  OrderDLQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: "OrderDeathLetterQueue"
 
   ApiGwExecutionRole: 
     Type: "AWS::IAM::Role"
@@ -177,10 +209,64 @@ Resources:
           Resource:
             - !GetAtt GetOrderFunction.Arn
             - !GetAtt DeleteOrderFunction.Arn
-            - !GetAtt CreateOrderFunction.Arn
             - !GetAtt OrderQueue.Arn
       Roles: 
         - Ref: "ApiGwExecutionRole"
+
+##########################################################################
+#           SQS QUEUE AND DLQ                                            # 
+##########################################################################
+
+  OrderQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: "OrderQueue"
+      RedrivePolicy:
+      deadLetterTargetArn: !GetAtt [OrderDLQueue,Arn]
+      maxReceiveCount: 3
+
+  OrderDLQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: "OrderDeathLetterQueue"
+
+
+##########################################################################
+#           STEPFUNCTIONS                                                # 
+##########################################################################
+
+  OrderStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties: 
+      DefinitionUri: ./stepfunctions/order.asl.json
+      Policies:
+        - LambdaInvokePolicy:
+            FunctionName: !Ref ManageStateFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref ProcessPaymentFumction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref SendOrderToRestaurantFunction
+        - version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - cloudwatch:*
+                - logs:*
+              Resource:
+                - "*" 
+      Logging:
+        Destinations:
+          - CloudWatchLogsLogGroup: 
+              LogGroupArn: !GetAtt OrderStateMachineLog.Arn
+        IncludeExecutionData: true
+        Level: 'ALL'
+
+  OrderStateMachineLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join ["/", ["stepfunctions",OrderStateMachine]]
+
+
 
 Outputs:
 
@@ -200,6 +286,9 @@ Outputs:
   DeleteOrderLambdaArn:
     Value: !GetAtt [DeleteOrderFunction,Arn]
 
+  UpdateOrderLambdaArn:
+    Value: !GetAtt [UpdateOrderFunction,Arn]
+
   OrderQueueUrl:
     Description: "URL of order queue"
     Value: !Ref OrderQueue
@@ -207,3 +296,18 @@ Outputs:
   OrderDLQueueUrl:
     Description: "URL of order dead-letter queue"
     Value: !Ref OrderDLQueue
+
+  OrderStateMachineArn:
+    Description: "Order state machine Arn"
+    Value: !Ref OrderStateMachine
+
+
+
+
+
+
+
+
+
+
+    

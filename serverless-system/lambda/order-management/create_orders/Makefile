@@ -7,6 +7,7 @@ docker_network:
 docker_run:
 	docker run -d -p 8000:8083 --network networktest --name stepfunctionlocal -e AWS_DEFAULT_REGION=ca-central-1 amazon/aws-stepfunctions-local
 aws_step_function_create_machine:
+#This target generates a json output with the state machine arn necessary for the last taregt
 	aws stepfunctions create-state-machine --name createOrderAsl --definition $(shell cat ${file}) --role-arn "arn:aws:iam::012345678901:role/DummyRole" --endpoint-url http://localhost:8000 --region ca-central-1
 aws_sam_build:
 	sam build -t template_local.yml --docker-network networktest 

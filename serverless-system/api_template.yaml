@@ -35,7 +35,7 @@ paths:
           Fn::GetAtt: [ ApiGwExecutionRole, Arn ]
         httpMethod: "POST"
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateOrderFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateOrderFunction.Arn}/invocations
         responses:
           default:
             statusCode: "201"
