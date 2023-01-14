@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  localstack:
+    container_name: aws_local
+    image: localstack/localstack
+    ports:
+      - "4566:4566"
+      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
+    environment:
+      - AWS_DEFAULT_REGION=ca-central-1
+      - SERVICES=dynamodb,sns,stepfunctions
+networks:
+  default:
+    name: networktest

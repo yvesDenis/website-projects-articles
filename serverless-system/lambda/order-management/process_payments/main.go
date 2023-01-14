@@ -9,7 +9,7 @@ import (
 
 type InEvent struct{}
 
-type OutEvent struct {
+type PaymentOutEvent struct {
 	Status       string `json:"status"`
 	ErrorMessage string `json:"error_message"`
 }
@@ -21,9 +21,9 @@ var (
 )
 
 //we will be returning random value of payment method
-func HandleRequest(event InEvent) OutEvent {
+func HandleRequest(event InEvent) PaymentOutEvent {
 
-	var response OutEvent
+	var response PaymentOutEvent
 	paymentRandom := RandInt(len(PAYMENT_STATE))
 
 	log.Println("Start Processing payment...")

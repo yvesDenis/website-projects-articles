@@ -9,7 +9,7 @@ import (
 
 type InEvent struct{}
 
-type OutEvent struct {
+type SendOrderOutEvent struct {
 	Status       string `json:"status"`
 	ErrorMessage string `json:"error_message"`
 }
@@ -21,9 +21,9 @@ var (
 )
 
 //we will be returning random value of sendOrder lambda
-func HandleRequest(event InEvent) OutEvent {
+func HandleRequest(event InEvent) SendOrderOutEvent {
 
-	var response OutEvent
+	var response SendOrderOutEvent
 	sendOrderRandom := RandInt(len(SEND_ORDER_STATE))
 
 	log.Println("Start sending order to restaurant...")

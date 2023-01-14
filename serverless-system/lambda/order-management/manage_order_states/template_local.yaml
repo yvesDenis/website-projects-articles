@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  demo
+  
+  Sample SAM Template for create order lambda
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 5
+    MemorySize: 128
+
+Parameters:
+  StateMachineArn:
+    Type: String
+    Description: State machine ARN
+    Default: arn
+  OrderSnsTopicArn:
+    Type: String
+    Description: Topic name Arn 
+    Default: topicname
+
+Resources:
+  ManageStateOrderFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: ManageStateOrderFunction
+      CodeUri: ./
+      Handler: manage_state_order
+      Runtime: go1.x
+      Architectures:
+        - x86_64
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          AWS_REGION: ca-central-1
+          STATE_MACHINE_ARN: !Ref StateMachineArn
+          SNS_TOPIC_ARN: !Ref OrderSnsTopicArn
+          ORDER_TABLE: order-table
+
+
+Outputs:
+  CreateOrderFunctionArn:
+    Description: "First Lambda Function ARN"
+    Value: !GetAtt ManageStateOrderFunction.Arn

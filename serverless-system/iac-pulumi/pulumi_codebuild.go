@@ -23,8 +23,8 @@ func loadConfig(ctx *pulumi.Context) *config_data {
 }
 
 var (
-	ecr_repo_name    = []string{"createorders", "getorders", "deleteorder"}
-	ecr_resource_map [3]*ecr.Repository
+	ecr_repo_name    = []string{"createorders", "manageorderstates", "processpayments", "sendorders", "updateorders", "getorders", "deleteorder"}
+	ecr_resource_map [7]*ecr.Repository
 )
 
 // Codebuild project
@@ -178,12 +178,28 @@ func createInfrastructureCodebuild(ctx *pulumi.Context) (*codebuild.Project, err
 					Value: ecr_resource_map[0].Name,
 				},
 				&codebuild.ProjectEnvironmentEnvironmentVariableArgs{
-					Name:  pulumi.String("IMAGE_REPO_GET"),
+					Name:  pulumi.String("IMAGE_MANAGE_STATE_ORDER"),
 					Value: ecr_resource_map[1].Name,
 				},
 				&codebuild.ProjectEnvironmentEnvironmentVariableArgs{
-					Name:  pulumi.String("IMAGE_REPO_DELETE"),
+					Name:  pulumi.String("IMAGE_PROCESS_PAYMENT"),
 					Value: ecr_resource_map[2].Name,
+				},
+				&codebuild.ProjectEnvironmentEnvironmentVariableArgs{
+					Name:  pulumi.String("IMAGE_SEND_ORDER"),
+					Value: ecr_resource_map[3].Name,
+				},
+				&codebuild.ProjectEnvironmentEnvironmentVariableArgs{
+					Name:  pulumi.String("IMAGE_UPDATE_ORDER"),
+					Value: ecr_resource_map[4].Name,
+				},
+				&codebuild.ProjectEnvironmentEnvironmentVariableArgs{
+					Name:  pulumi.String("IMAGE_GET_ORDER"),
+					Value: ecr_resource_map[5].Name,
+				},
+				&codebuild.ProjectEnvironmentEnvironmentVariableArgs{
+					Name:  pulumi.String("IMAGE_DELETE_ORDER"),
+					Value: ecr_resource_map[6].Name,
 				},
 			},
 		},

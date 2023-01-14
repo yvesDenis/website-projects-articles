@@ -7,8 +7,12 @@ phases:
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
       - IMAGE_TAG=${CODEBUILD_RESOLVED_SOURCE_VERSION:=latest}
       - IMAGE_REPO_CREATE_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_CREATE
-      - IMAGE_REPO_GET_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_GET
-      - IMAGE_REPO_DELETE_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_DELETE
+      - IMAGE_MANAGE_STATE_ORDER_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_MANAGE_STATE_ORDER
+      - IMAGE_PROCESS_PAYMENT_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_PROCESS_PAYMENT
+      - IMAGE_SEND_ORDER_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_SEND_ORDER
+      - IMAGE_UPDATE_ORDER_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_UPDATE_ORDER
+      - IMAGE_GET_ORDER_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_GET_ORDER
+      - IMAGE_DELETE_ORDER_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_DELETE_ORDER
   build:
     commands:
       - echo Build started on `date`
@@ -20,7 +24,16 @@ phases:
     commands:
       - echo Build completed on `date`
       - echo Packaging serverless resources...
-      - sam package --region $AWS_DEFAULT_REGION --output-template-file packaged-template.yaml --image-repositories CreateOrderFunction=$IMAGE_REPO_CREATE_URL --image-repositories GetOrderFunction=$IMAGE_REPO_GET_URL --image-repositories DeleteOrderFunction=$IMAGE_REPO_DELETE_URL --resolve-s3   
+      - >
+        sam package --region $AWS_DEFAULT_REGION --output-template-file packaged-template.yaml 
+        --image-repositories CreateOrderFunction=$IMAGE_REPO_CREATE_URL 
+        --image-repositories ManageOrderStateFunction=$IMAGE_MANAGE_STATE_ORDER_URL 
+        --image-repositories ProcessPaymentFunction=$IMAGE_PROCESS_PAYMENT_URL 
+        --image-repositories SendOrderFunction=$IMAGE_SEND_ORDER_URL 
+        --image-repositories GetOrderFunction=$IMAGE_GET_ORDER_URL 
+        --image-repositories DeleteOrderFunction=$IMAGE_DELETE_ORDER_URL 
+        --image-repositories UpdateOrderFunction=$IMAGE_UPDATE_ORDER_URL
+        --resolve-s3   
 artifacts:
   files:
     - serverless-system/*

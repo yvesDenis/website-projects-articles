@@ -22,6 +22,10 @@ Parameters:
   TableName:
     Type: String
     Default: order-table
+  UserEmail:
+    Type: String
+    Description: User email for SNS notification destination.
+    Default: yvesdeffo@gmail.com
 
 Resources: 
 
@@ -47,6 +51,7 @@ Resources:
         WriteCapacityUnits: "5"
       TableName: !Ref TableName
 
+
 ##########################################################################
 #             LAMBDA  GROUP ORDER MANAGEMENT                             # 
 ##########################################################################
@@ -65,17 +70,69 @@ Resources:
         - StepFunctionsExecutionPolicy:
             StateMachineName:
               !Ref OrderStateMachine
-        - Statement:
-          - Effect: Allow
-            Action:
-              - logs:*
-            Resource:
-              - "*" 
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - logs:*
+              Resource:
+                - "*" 
       Environment: 
         STATE_MACHINE_ARN: !Ref OrderStateMachine
     Metadata:
       DockerTag: !Ref TagVersion
       DockerContext: ./lambda/order-management/create_orders
+      Dockerfile: Dockerfile
+
+  ManageOrderStateFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      PackageType: Image
+      Policies:
+        - SNSPublishMessagePolicy:
+            TopicName:
+              !GetAtt OrderSnsTopic.TopicName
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:Query 
+                - dynamodb:Scan
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+              Resource:
+                - !Sub 
+                  - 'arn:aws:dynamodb:*:*:table/${Table}'
+                  - { Table: !Ref OrderTable }
+            - Effect: Allow
+              Action:
+                - logs:*
+              Resource:
+                - "*"  
+      Environment: 
+        SNS_TOPIC_ARN: !Ref OrderSnsTopic
+    Metadata:
+      DockerTag: !Ref TagVersion
+      DockerContext: ./lambda/order-management/manage_order_states
+      Dockerfile: Dockerfile
+
+  ProcessPaymentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+    Metadata:
+      DockerTag: !Ref TagVersion
+      DockerContext: ./lambda/order-management/process_payments
+      Dockerfile: Dockerfile
+
+  SendOrderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+    Metadata:
+      DockerTag: !Ref TagVersion
+      DockerContext: ./lambda/order-management/send_orders
       Dockerfile: Dockerfile
 
 
@@ -116,9 +173,6 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
-              - dynamodb:GetItem
-              - dynamodb:Query 
-              - dynamodb:Scan
               - dynamodb:DeleteItem
             Resource:
               - !Sub 
@@ -142,10 +196,7 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
-              - dynamodb:GetItem
-              - dynamodb:Query 
-              - dynamodb:Scan
-              - dynamodb:DeleteItem
+              - dynamodb:UpdateItem 
             Resource:
               - !Sub 
                 - 'arn:aws:dynamodb:*:*:table/${Table}'
@@ -159,6 +210,7 @@ Resources:
       DockerTag: !Ref TagVersion
       DockerContext: ./lambda/sync-operations/update_orders
       Dockerfile: Dockerfile
+
 
 ##########################################################################
 #           API GATEWAY                                                  # 
@@ -213,6 +265,7 @@ Resources:
       Roles: 
         - Ref: "ApiGwExecutionRole"
 
+
 ##########################################################################
 #           SQS QUEUE AND DLQ                                            # 
 ##########################################################################
@@ -239,13 +292,17 @@ Resources:
     Type: AWS::Serverless::StateMachine
     Properties: 
       DefinitionUri: ./stepfunctions/order.asl.json
+      DefinitionSubstitutions:
+        ManageOrderStateArn: !GetAtt ManageOrderStateFunction.Arn
+        ProcessPaymentArn: !GetAtt ProcessPaymentFunction.Arn
+        SendOrderArn: !GetAtt SendOrderFunction.Arn
       Policies:
         - LambdaInvokePolicy:
-            FunctionName: !Ref ManageStateFunction
+            FunctionName: !Ref ManageOrderStateFunction
         - LambdaInvokePolicy:
-            FunctionName: !Ref ProcessPaymentFumction
+            FunctionName: !Ref ProcessPaymentFunction
         - LambdaInvokePolicy:
-            FunctionName: !Ref SendOrderToRestaurantFunction
+            FunctionName: !Ref SendOrderFunction
         - version: "2012-10-17"
           Statement:
             - Effect: Allow
@@ -267,6 +324,22 @@ Resources:
       LogGroupName: !Join ["/", ["stepfunctions",OrderStateMachine]]
 
 
+##########################################################################
+#                      SNS TOPIC                                         # 
+##########################################################################
+
+OrderSnsTopic:
+  Type: AWS::SNS::Topic
+  Properties: 
+    Subscription: 
+      - Endpoint: !Ref UserEmail
+        Protocol: "email"
+    TopicName: "Order-sns-topic"
+
+
+##########################################################################
+#                      OUTPUTS                                           # 
+##########################################################################
 
 Outputs:
 
@@ -288,6 +361,21 @@ Outputs:
 
   UpdateOrderLambdaArn:
     Value: !GetAtt [UpdateOrderFunction,Arn]
+  
+  ManageOrderStateLambdaArn:
+    Value: !GetAtt [ManageOrderStateFunction,Arn]
+
+  ProcessPaymentLambdaArn:
+    Value: !GetAtt [ProcessPaymentFunction,Arn]
+
+  SendOrderLambdaArn:
+    Value: !GetAtt [SendOrderFunction,Arn]
+
+  OrderSnsTopicName:
+    Value: !GetAtt [OrderSnsTopic,TopicName]
+
+  OrderSnsTopicArn:
+    Value: !Ref OrderSnsTopic
 
   OrderQueueUrl:
     Description: "URL of order queue"
