@@ -275,8 +275,8 @@ Resources:
     Properties:
       QueueName: "OrderQueue"
       RedrivePolicy:
-      deadLetterTargetArn: !GetAtt [OrderDLQueue,Arn]
-      maxReceiveCount: 3
+        deadLetterTargetArn: !GetAtt [OrderDLQueue,Arn]
+        maxReceiveCount: 3
 
   OrderDLQueue:
     Type: AWS::SQS::Queue
