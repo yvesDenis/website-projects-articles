@@ -69,7 +69,7 @@ Resources:
       Policies:
         - StepFunctionsExecutionPolicy:
             StateMachineName:
-              !Ref OrderStateMachine
+              !GetAtt OrderStateMachine.Name
         - Version: '2012-10-17'
           Statement:
             - Effect: Allow

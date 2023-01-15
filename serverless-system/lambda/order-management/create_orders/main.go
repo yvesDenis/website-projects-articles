@@ -24,6 +24,10 @@ type OrderRequest struct {
 	OrderStatus  string    `json:"order_status"`
 }
 
+type SqsEventWrapper struct {
+	Data OrderRequest `json:"data"`
+}
+
 type Response struct {
 	StatusCode int
 }
@@ -63,13 +67,15 @@ func init() {
 
 func HandleRequest(request events.SQSEvent) (Response, error) {
 
-	var orderRequest OrderRequest
+	var sqsEventWrapper SqsEventWrapper
 	message := request.Records[0]
 
 	log.Printf("Order request from SQS Queue : %v", message.Body)
-	if err := json.Unmarshal([]byte(message.Body), &orderRequest); err != nil {
+	if err := json.Unmarshal([]byte(message.Body), &sqsEventWrapper); err != nil {
 		return handleError(err)
 	}
+
+	orderRequest := sqsEventWrapper.Data
 
 	orderRequest.OrderStatus = DEFAULT_ORDER_STATUS
 	orderRequest.CreatedAt = time.Now()
@@ -106,7 +112,7 @@ func HandleRequest(request events.SQSEvent) (Response, error) {
 }
 
 func handleError(err error) (Response, error) {
-	log.Panicf("unable to process request %v", err)
+	log.Panicf("Unable to process request %v", err)
 	return Response{
 		StatusCode: http.StatusInternalServerError,
 	}, nil
