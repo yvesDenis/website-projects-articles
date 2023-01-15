@@ -21,7 +21,7 @@ var (
 )
 
 //we will be returning random value of payment method
-func HandleRequest(event InEvent) PaymentOutEvent {
+func HandleRequest(event InEvent) (PaymentOutEvent, error) {
 
 	var response PaymentOutEvent
 	paymentRandom := RandInt(len(PAYMENT_STATE))
@@ -37,7 +37,7 @@ func HandleRequest(event InEvent) PaymentOutEvent {
 
 	log.Println("End Processing payment...")
 
-	return response
+	return response, nil
 }
 
 func main() {

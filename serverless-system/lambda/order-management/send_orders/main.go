@@ -21,7 +21,7 @@ var (
 )
 
 //we will be returning random value of sendOrder lambda
-func HandleRequest(event InEvent) SendOrderOutEvent {
+func HandleRequest(event InEvent) (SendOrderOutEvent, error) {
 
 	var response SendOrderOutEvent
 	sendOrderRandom := RandInt(len(SEND_ORDER_STATE))
@@ -37,7 +37,7 @@ func HandleRequest(event InEvent) SendOrderOutEvent {
 
 	log.Println("End sending order to restaurant...")
 
-	return response
+	return response, nil
 }
 
 func main() {
