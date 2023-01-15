@@ -78,7 +78,8 @@ Resources:
               Resource:
                 - "*" 
       Environment: 
-        STATE_MACHINE_ARN: !Ref OrderStateMachine
+        Variables:
+          STATE_MACHINE_ARN: !Ref OrderStateMachine
     Metadata:
       DockerTag: !Ref TagVersion
       DockerContext: ./lambda/order-management/create_orders
