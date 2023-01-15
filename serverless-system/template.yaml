@@ -111,7 +111,8 @@ Resources:
               Resource:
                 - "*"  
       Environment: 
-        SNS_TOPIC_ARN: !Ref OrderSnsTopic
+        Variables:
+          SNS_TOPIC_ARN: !GetAtt OrderSnsTopic.TopicArn
     Metadata:
       DockerTag: !Ref TagVersion
       DockerContext: ./lambda/order-management/manage_order_states
@@ -328,13 +329,13 @@ Resources:
 #                      SNS TOPIC                                         # 
 ##########################################################################
 
-OrderSnsTopic:
-  Type: AWS::SNS::Topic
-  Properties: 
-    Subscription: 
-      - Endpoint: !Ref UserEmail
-        Protocol: "email"
-    TopicName: "Order-sns-topic"
+  OrderSnsTopic:
+    Type: AWS::SNS::Topic
+    Properties: 
+      Subscription: 
+        - Endpoint: !Ref UserEmail
+          Protocol: "email"
+      TopicName: "Order-sns-topic"
 
 
 ##########################################################################
@@ -375,7 +376,7 @@ Outputs:
     Value: !GetAtt [OrderSnsTopic,TopicName]
 
   OrderSnsTopicArn:
-    Value: !Ref OrderSnsTopic
+    Value: !GetAtt [OrderSnsTopic.TopicArn]
 
   OrderQueueUrl:
     Description: "URL of order queue"

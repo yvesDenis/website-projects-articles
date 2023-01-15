@@ -21,7 +21,7 @@ type InEvent struct {
 	SendOrderOutEvent SendOrderOutEvent `json:"sendOrderOutEvent"`
 	PaymentOutEvent   PaymentOutEvent   `json:"paymentOutEvent"`
 	RestaurantId      string            `json:"restaurant_id"`
-	CreatedAt         time.Time         `json:"created_at"`
+	CreatedAt         string            `json:"created_at"`
 	Quantity          string            `json:"quantity"`
 	OrderStatus       string            `json:"order_status"`
 	MessageId         string            `json:"message_id"`
@@ -261,12 +261,19 @@ func HandleError(err error) (ManageStateResponse, error) {
 }
 
 func FromInEventToOrderItem(event InEvent) OrderItem {
+
+	createdAt, err := time.Parse(time.RFC3339, event.CreatedAt)
+
+	if err != nil {
+		log.Println(err)
+		createdAt = time.Time{}
+	}
 	return OrderItem{
 		UserId:       event.UserId,
 		RestaurantId: event.RestaurantId,
 		Quantity:     event.Quantity,
 		Id:           event.Id,
-		CreatedAt:    event.CreatedAt,
+		CreatedAt:    createdAt,
 		OrderStatus:  event.OrderStatus,
 		MessageId:    event.MessageId,
 	}

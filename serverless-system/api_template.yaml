@@ -9,7 +9,9 @@ schemes:
 paths:
   /orders:
     get:
-      responses: {}
+      responses: 
+        "200":
+          description: "200 response"
       x-amazon-apigateway-integration:
         credentials: 
           Fn::GetAtt: [ ApiGwExecutionRole, Arn ]
@@ -24,12 +26,9 @@ paths:
     put:
       produces:
       - "application/json"
-      parameters:
-      - name: "orderId"
-        in: "path"
-        required: true
-        type: "string"
-      responses: {}
+      responses: 
+        "204":
+          description: "200 response"
       x-amazon-apigateway-integration:
         credentials: 
           Fn::GetAtt: [ ApiGwExecutionRole, Arn ]
@@ -47,8 +46,8 @@ paths:
       produces:
       - "application/json"
       responses:
-        "200":
-          description: "200 response"
+        "201":
+          description: "201 response"
       x-amazon-apigateway-integration:
         type: "aws"
         credentials: 
@@ -58,7 +57,7 @@ paths:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:sqs:path/${AWS::AccountId}/${OrderQueue.QueueName}
         responses:
           default:
-            statusCode: "200"
+            statusCode: "201"
         requestParameters:
           integration.request.header.Content-Type: "'application/x-www-form-urlencoded'"
         requestTemplates:
@@ -66,7 +65,18 @@ paths:
         passthroughBehavior: "when_no_match"
   /order/{userId}/id/{id}:
     delete:
-      responses: {}
+      parameters:
+      - name: "userId"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      responses: 
+        "204":
+          description: "200 response"
       x-amazon-apigateway-integration:
         credentials: 
           Fn::GetAtt: [ ApiGwExecutionRole, Arn ]
