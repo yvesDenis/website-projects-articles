@@ -19,7 +19,7 @@ phases:
       - echo Moving into serverless-system folder... 
       - cd ./serverless-system         
       - echo Building serverless resources... 
-      - sam build --parameter-overrides TagVersion=$IMAGE_TAG --parallel
+      - sam build --parameter-overrides TagVersion=$IMAGE_TAG --parallel 
   post_build:
     commands:
       - echo Build completed on `date`

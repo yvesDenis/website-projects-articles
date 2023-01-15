@@ -320,7 +320,7 @@ Resources:
         Level: 'ALL'
 
   OrderStateMachineLog:
-    Type: AWS::Logs::LogGroup
+    Type: AWS::Logs::LogGroup 
     Properties:
       LogGroupName: !Join ["/", ["stepfunctions",OrderStateMachine]]
 
