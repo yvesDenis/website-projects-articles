@@ -376,7 +376,7 @@ Outputs:
     Value: !GetAtt [OrderSnsTopic,TopicName]
 
   OrderSnsTopicArn:
-    Value: !GetAtt [OrderSnsTopic.TopicArn]
+    Value: !GetAtt [OrderSnsTopic,TopicArn]
 
   OrderQueueUrl:
     Description: "URL of order queue"
