@@ -13,3 +13,11 @@ https://yvesdenis.github.io/post/ecs-ecr-codebuild-part-1-post/
 ## Build, deploy and run an application with ECR, ECS and Codebuild (Part 2)
 
 https://yvesdenis.github.io/post/ecs-ecr-codebuild-part-2-post/
+
+## Build serverless system with Pulumi and AWS (Part 1)
+
+https://yvesdenis.github.io/post/build-serverless-system-part-1-post/
+
+## Build serverless system with Pulumi and AWS (Part 2)
+
+https://yvesdenis.github.io/post/build-serverless-system-part-2-post/
