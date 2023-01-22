@@ -1,0 +1,20 @@
+{
+  "Records": [
+    {
+      "messageId": "19dd0b57-b21e-4ac1-bd88-01bbb068cb78",
+      "receiptHandle": "MessageReceiptHandle",
+      "body": "{\"user_id\": \"Burger_2\",\"quantity\": \"3\",\"restaurant_id\": \"Restaurant 3\"}",
+      "attributes": {
+        "ApproximateReceiveCount": "1",
+        "SentTimestamp": "1523232000000",
+        "SenderId": "123456789012",
+        "ApproximateFirstReceiveTimestamp": "1523232000001"
+      },
+      "messageAttributes": {},
+      "md5OfBody": "688065a76929489e3909fe2addd82ad6",
+      "eventSource": "aws:sqs",
+      "eventSourceARN": "arn:aws:sqs:us-east-1:123456789012:MyQueue",
+      "awsRegion": "us-east-1"
+    }
+  ]
+}

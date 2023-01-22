@@ -1,0 +1,74 @@
+{
+    "Comment": "Order Processing",
+    "StartAt": "SaveOrder",
+    "States": {
+      "SaveOrder": {
+            "Comment": "Process the order and save the return value.",
+            "Type": "Task",
+            "Resource": "${ManageOrderStateArn}",
+            "ResultPath": "$.taskResult",
+            "Next": "ProcessPayment"
+      },
+      "ProcessPayment": {
+            "Comment": "Process the payment and save the return value.",
+            "Type": "Task",
+            "Resource": "${ProcessPaymentArn}",
+            "ResultPath": "$.paymentOutEvent",
+            "Next": "WaitTen30Seconds"
+      },
+      "WaitTen30Seconds": {
+            "Type": "Wait",
+            "Seconds": 30,
+            "Next": "PaymentChoice"
+      },  
+      "PaymentChoice": {
+            "Comment": "Determine whether the payment was processed successfully or not.  If successful, send the order to the restaurant.  If not, go to the PaymentFailure step (default behavior).",
+            "Type": "Choice",
+            "Choices": [
+                {
+                  "Variable": "$.paymentOutEvent.status",
+                  "StringEquals": "ok",
+                  "Next": "SendOrderToRestaurant"
+                }
+            ],
+            "Default": "PaymentFailure"
+      },
+      "PaymentFailure": {
+            "Comment": "Payment failure means the order state must be updated in the lab-orders table.  End the execution of the State machine.",
+            "Type": "Task",
+            "Resource": "${ManageOrderStateArn}",
+            "End": true
+      },
+      "SendOrderToRestaurant": {
+            "Comment": "Send the order to the restaurant and capture the return value.",
+            "Type": "Task",
+            "Resource": "${SendOrderArn}",
+            "ResultPath": "$.sendOrderOutEvent",
+            "Next": "SendToRestaurantChoice"
+      },
+      "SendToRestaurantChoice": {
+            "Comment": "Determine whether the restaurant processed the order successfully or not.  If successful, move on to updating the order status.  If not, go to the SentToRestaurantFailure step (default behavior).",
+            "Type": "Choice",
+            "Choices": [
+                {
+                  "Variable": "$.sendOrderOutEvent.status",
+                  "StringEquals": "ok",
+                  "Next": "UpdateOrderStatus"
+                }
+            ],
+            "Default": "SendToRestaurantFailure"
+      },
+      "SendToRestaurantFailure": {
+            "Comment": "Sent to restaurant failure means the order state must be updated in the lab-orders table.  End the execution of the State machine.",
+            "Type": "Task",
+            "Resource": "${ManageOrderStateArn}",
+            "End": true
+      },
+      "UpdateOrderStatus": {
+            "Comment": "Update the lab-orders table to indicate the order was successfully received by the restaurant.",
+            "Type": "Task",
+            "Resource": "${ManageOrderStateArn}",
+            "End": true
+      }
+    }
+}

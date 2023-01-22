@@ -1,0 +1,477 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Template for the serverless-system application
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 5
+    MemorySize: 128
+    Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+      Variables:
+        ORDER_TABLE: !Ref TableName
+
+Parameters:
+  TagVersion:
+    Type: String
+    Description: Commit Hash.
+    Default: latest
+  ApiGatewayStageName:
+    Type: String
+    Default: Dev
+  TableName:
+    Type: String
+    Default: order-table
+  UserEmail:
+    Type: String
+    Description: User email for SNS notification destination.
+    Default: yvesdeffo@gmail.com
+
+Resources: 
+
+##########################################################################
+#             DYNAMODB TABLE                                             # 
+##########################################################################
+
+  OrderTable: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - AttributeName: "user_id"
+          AttributeType: "S"
+        - AttributeName: "id"
+          AttributeType: "S"
+      KeySchema: 
+        - AttributeName: user_id
+          KeyType: HASH
+        - AttributeName: id
+          KeyType: RANGE
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+      TableName: !Ref TableName
+
+
+##########################################################################
+#             LAMBDA  GROUP ORDER MANAGEMENT                             # 
+##########################################################################
+
+  CreateOrderFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      PackageType: Image
+      Events:
+        OrderSQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt OrderQueue.Arn
+            BatchSize: 10
+      Policies:
+        - StepFunctionsExecutionPolicy:
+            StateMachineName:
+              !GetAtt OrderStateMachine.Name
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - logs:*
+              Resource:
+                - "*" 
+      Environment: 
+        Variables:
+          STATE_MACHINE_ARN: !Ref OrderStateMachine
+    Metadata:
+      DockerTag: !Ref TagVersion
+      DockerContext: ./lambda/order-management/create_orders
+      Dockerfile: Dockerfile
+
+  ManageOrderStateFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      PackageType: Image
+      Policies:
+        - SNSPublishMessagePolicy:
+            TopicName:
+              !GetAtt OrderSnsTopic.TopicName
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:Query 
+                - dynamodb:Scan
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+              Resource:
+                - !Sub 
+                  - 'arn:aws:dynamodb:*:*:table/${Table}'
+                  - { Table: !Ref OrderTable }
+            - Effect: Allow
+              Action:
+                - logs:*
+              Resource:
+                - "*"  
+      Environment: 
+        Variables:
+          SNS_TOPIC_ARN: !GetAtt OrderSnsTopic.TopicArn
+    Metadata:
+      DockerTag: !Ref TagVersion
+      DockerContext: ./lambda/order-management/manage_order_states
+      Dockerfile: Dockerfile
+
+  ProcessPaymentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+    Metadata:
+      DockerTag: !Ref TagVersion
+      DockerContext: ./lambda/order-management/process_payments
+      Dockerfile: Dockerfile
+
+  SendOrderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+    Metadata:
+      DockerTag: !Ref TagVersion
+      DockerContext: ./lambda/order-management/send_orders
+      Dockerfile: Dockerfile
+
+
+##########################################################################
+#             LAMBDA  GROUP SYNC-OPERATIONS                              # 
+##########################################################################
+
+  GetOrderFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      PackageType: Image
+      Policies:
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:GetItem
+              - dynamodb:Query 
+              - dynamodb:Scan
+            Resource:
+              - !Sub 
+                - 'arn:aws:dynamodb:*:*:table/${Table}'
+                - { Table: !Ref OrderTable }
+          - Effect: Allow
+            Action:
+              - logs:*
+            Resource:
+              - "*" 
+    Metadata:
+      DockerTag: !Ref TagVersion
+      DockerContext: ./lambda/sync-operations/get_orders
+      Dockerfile: Dockerfile
+
+  DeleteOrderFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      PackageType: Image
+      Policies:
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:DeleteItem
+            Resource:
+              - !Sub 
+                - 'arn:aws:dynamodb:*:*:table/${Table}'
+                - { Table: !Ref OrderTable }
+          - Effect: Allow
+            Action:
+              - logs:*
+            Resource:
+              - "*" 
+    Metadata:
+      DockerTag: !Ref TagVersion
+      DockerContext: ./lambda/sync-operations/delete_orders
+      Dockerfile: Dockerfile
+
+  UpdateOrderFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      PackageType: Image
+      Policies:
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:UpdateItem 
+            Resource:
+              - !Sub 
+                - 'arn:aws:dynamodb:*:*:table/${Table}'
+                - { Table: !Ref OrderTable }
+          - Effect: Allow
+            Action:
+              - logs:*
+            Resource:
+              - "*" 
+    Metadata:
+      DockerTag: !Ref TagVersion
+      DockerContext: ./lambda/sync-operations/update_orders
+      Dockerfile: Dockerfile
+
+##########################################################################
+#           LAMBDA AUTHORIZER                                            # 
+##########################################################################
+
+  MyAuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./lambda/auth/
+      Handler: auth.handler
+      Runtime: go1.x
+      Architectures:
+          - x86_64
+      Policies:
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:*
+            Resource:
+              - "*" 
+
+
+##########################################################################
+#           API GATEWAY                                                  # 
+##########################################################################
+
+  OrderApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref ApiGatewayStageName
+      Cors:
+        AllowMethods: "'POST, GET, UPDATE, DELETE'"
+        AllowHeaders: "'X-Forwarded-For'"
+        AllowOrigin: "'*'"
+        MaxAge: "'600'"
+      DefinitionBody:
+        'Fn::Transform':
+          Name: 'AWS::Include'
+          Parameters:
+            Location: './api_template.yaml'
+      Auth:
+        DefaultAuthorizer: MyLambdaRequestAuthorizer
+        Authorizers:
+          MyLambdaRequestAuthorizer:
+            FunctionPayloadType: REQUEST
+            FunctionArn: !GetAtt MyAuthFunction.Arn
+            Identity:
+              Headers:
+                - AUTH
+        #DefaultAuthorizer: MyCognitoAuth
+        #Authorizers:
+          #MyCognitoAuth:
+            #UserPoolArn: !GetAtt OrderCognitoPool.Arn
+
+  ApiGwExecutionRole: 
+    Type: "AWS::IAM::Role"
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - Effect: "Allow"
+            Principal: 
+              Service: 
+                - "apigateway.amazonaws.com"
+                - "lambda.amazonaws.com"
+                - "sqs.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+      Path: "/"
+
+  ApiGwExecutionPolicy: 
+    Type: "AWS::IAM::Policy"
+    Properties: 
+      PolicyName: "apigw-execution-policy"
+      PolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          Action:
+            - sqs:SendMessage
+            - lambda:*
+          Effect: Allow
+          Resource:
+            - !GetAtt GetOrderFunction.Arn
+            - !GetAtt DeleteOrderFunction.Arn
+            - !GetAtt OrderQueue.Arn
+            - !GetAtt MyAuthFunction.Arn
+      Roles: 
+        - Ref: "ApiGwExecutionRole"
+
+
+##########################################################################
+#           SQS QUEUE AND DLQ                                            # 
+##########################################################################
+
+  OrderQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: "OrderQueue"
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt [OrderDLQueue,Arn]
+        maxReceiveCount: 3
+
+  OrderDLQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: "OrderDeathLetterQueue"
+
+
+##########################################################################
+#           STEPFUNCTIONS                                                # 
+##########################################################################
+
+  OrderStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties: 
+      DefinitionUri: ./stepfunctions/order.asl.json
+      DefinitionSubstitutions:
+        ManageOrderStateArn: !GetAtt ManageOrderStateFunction.Arn
+        ProcessPaymentArn: !GetAtt ProcessPaymentFunction.Arn
+        SendOrderArn: !GetAtt SendOrderFunction.Arn
+      Policies:
+        - LambdaInvokePolicy:
+            FunctionName: !Ref ManageOrderStateFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref ProcessPaymentFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref SendOrderFunction
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - cloudwatch:*
+                - logs:*
+              Resource:
+                - "*" 
+      Logging:
+        Destinations:
+          - CloudWatchLogsLogGroup: 
+              LogGroupArn: !GetAtt OrderStateMachineLog.Arn
+        IncludeExecutionData: true
+        Level: 'ALL'
+
+  OrderStateMachineLog:
+    Type: AWS::Logs::LogGroup 
+    Properties:
+      LogGroupName: !Join ["/", ["stepfunctions",OrderStateMachine]]
+
+
+##########################################################################
+#                      SNS TOPIC                                         # 
+##########################################################################
+
+  OrderSnsTopic:
+    Type: AWS::SNS::Topic
+    Properties: 
+      Subscription: 
+        - Endpoint: !Ref UserEmail
+          Protocol: "email"
+      TopicName: "Order-sns-topic"
+
+
+##########################################################################
+#                      COGNITO USER POOL                                 # 
+##########################################################################
+
+  OrderCognitoPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: orders-pool
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+      UsernameAttributes:
+        - email
+      Schema:
+        - AttributeDataType: String
+          Name: email
+          Required: true
+
+  OrderCognitoPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref OrderCognitoPool
+      ClientName: order-pool-client
+      ExplicitAuthFlows:
+        - ALLOW_ADMIN_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      GenerateSecret: true
+      SupportedIdentityProviders:
+        - COGNITO
+
+##########################################################################
+#                      OUTPUTS                                           # 
+##########################################################################
+
+Outputs:
+
+  DynamoDBTableName:
+    Description: "DynamoDB Table Name"
+    Value: !Ref OrderTable
+
+  ApiGatewayInvokeURL:
+    Value: !Sub https://${OrderApi}.execute-api.${AWS::Region}.amazonaws.com/${ApiGatewayStageName}/orders/
+
+  CreateOrderLambdaArn:
+    Value: !GetAtt [CreateOrderFunction,Arn]
+  
+  GetOrderLambdaArn:
+    Value: !GetAtt [GetOrderFunction,Arn]
+
+  DeleteOrderLambdaArn:
+    Value: !GetAtt [DeleteOrderFunction,Arn]
+
+  UpdateOrderLambdaArn:
+    Value: !GetAtt [UpdateOrderFunction,Arn]
+  
+  ManageOrderStateLambdaArn:
+    Value: !GetAtt [ManageOrderStateFunction,Arn]
+
+  ProcessPaymentLambdaArn:
+    Value: !GetAtt [ProcessPaymentFunction,Arn]
+
+  SendOrderLambdaArn:
+    Value: !GetAtt [SendOrderFunction,Arn]
+
+  MyAuthFunctionArn:
+    Value: !GetAtt [MyAuthFunction,Arn]
+
+  OrderSnsTopicName:
+    Value: !GetAtt [OrderSnsTopic,TopicName]
+
+  OrderSnsTopicArn:
+    Value: !GetAtt [OrderSnsTopic,TopicArn]
+
+  OrderQueueUrl:
+    Description: "URL of order queue"
+    Value: !Ref OrderQueue
+
+  OrderDLQueueUrl:
+    Description: "URL of order dead-letter queue"
+    Value: !Ref OrderDLQueue
+
+  OrderStateMachineArn:
+    Description: "Order state machine Arn"
+    Value: !Ref OrderStateMachine
+
+  CognitoClientID:
+    Description: "The client ID of the Cognito user pool"
+    Value: !Ref OrderCognitoPoolClient
+
+  CognitoUserPoolID:
+    Description: "ID of the Cognito userpool"
+    Value: !Ref OrderCognitoPool
+
+
+
+
+
+
+
+
+
+    

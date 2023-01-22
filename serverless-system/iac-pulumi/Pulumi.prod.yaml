@@ -1,0 +1,3 @@
+config:
+  serverless:region: ca-central-1
+  serverless:account: 516193157210

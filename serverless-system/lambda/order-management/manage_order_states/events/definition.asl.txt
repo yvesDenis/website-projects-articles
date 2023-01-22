@@ -1,0 +1,1 @@
+"{\"Comment\":\"MockedAmazonStatesLanguagefortesting\",\"StartAt\":\"HelloWorld\",\"States\":{\"HelloWorld\":{\"Type\":\"Task\",\"Resource\":\"arn:aws:lambda:ca-central-1:000000000000:function:ManageStateOrderFunction\",\"End\":true}}}"

@@ -1,0 +1,91 @@
+---
+swagger: "2.0"
+info:
+  version: "1.0"
+  title: "order-app"
+basePath: "/Dev"
+schemes:
+- "https"
+paths:
+  /orders:
+    get:
+      responses: 
+        "200":
+          description: "200 response"
+      x-amazon-apigateway-integration:
+        credentials: 
+          Fn::GetAtt: [ ApiGwExecutionRole, Arn ]
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetOrderFunction.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+    put:
+      produces:
+      - "application/json"
+      responses: 
+        "204":
+          description: "200 response"
+      x-amazon-apigateway-integration:
+        credentials: 
+          Fn::GetAtt: [ ApiGwExecutionRole, Arn ]
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateOrderFunction.Arn}/invocations
+        responses:
+          default:
+            statusCode: "201"
+        passthroughBehavior: "when_no_match"
+        type: "aws_proxy"
+    post:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        "201":
+          description: "201 response"
+      x-amazon-apigateway-integration:
+        type: "aws"
+        credentials: 
+          Fn::GetAtt: [ ApiGwExecutionRole, Arn ]
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:sqs:path/${AWS::AccountId}/${OrderQueue.QueueName}
+        responses:
+          default:
+            statusCode: "201"
+        requestParameters:
+          integration.request.header.Content-Type: "'application/x-www-form-urlencoded'"
+        requestTemplates:
+          application/json: "Action=SendMessage&MessageBody={\"data\":$input.json('$')}"
+        passthroughBehavior: "when_no_match"
+  /order/{userId}/id/{id}:
+    delete:
+      parameters:
+      - name: "userId"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      responses: 
+        "204":
+          description: "200 response"
+      x-amazon-apigateway-integration:
+        credentials: 
+          Fn::GetAtt: [ ApiGwExecutionRole, Arn ]
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteOrderFunction.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+

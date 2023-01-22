@@ -1,0 +1,6 @@
+{
+    "user_id": {"S": "Burger_2"},
+    "id": {"S": "81"},
+    "quantity": {"S": "3"},
+    "restaurant_id": {"S": "Restaurant 3"}
+}
