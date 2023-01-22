@@ -16,9 +16,9 @@ func HandleRequest(request events.APIGatewayCustomAuthorizerRequestTypeRequest) 
 	log.Printf("Auth secret from apigateway event : %v", authSecret)
 
 	if AUTH_SECRET != authSecret {
-		return GenerateDeny("user", request.MethodArn)
+		return GenerateDeny("user", "*")
 	} else {
-		return GenerateAllow("user", request.MethodArn)
+		return GenerateAllow("user", "*")
 	}
 }
 

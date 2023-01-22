@@ -213,6 +213,26 @@ Resources:
       DockerContext: ./lambda/sync-operations/update_orders
       Dockerfile: Dockerfile
 
+##########################################################################
+#           LAMBDA AUTHORIZER                                            # 
+##########################################################################
+
+  MyAuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./lambda/auth/
+      Handler: auth.handler
+      Runtime: go1.x
+      Architectures:
+          - x86_64
+      Policies:
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:*
+            Resource:
+              - "*" 
+
 
 ##########################################################################
 #           API GATEWAY                                                  # 
@@ -233,10 +253,18 @@ Resources:
           Parameters:
             Location: './api_template.yaml'
       Auth:
-        DefaultAuthorizer: MyCognitoAuth
+        DefaultAuthorizer: MyLambdaRequestAuthorizer
         Authorizers:
-          MyCognitoAuth:
-            UserPoolArn: !GetAtt OrderCognitoPool.Arn
+          MyLambdaRequestAuthorizer:
+            FunctionPayloadType: REQUEST
+            FunctionArn: !GetAtt MyAuthFunction.Arn
+            Identity:
+              Headers:
+                - AUTH
+        #DefaultAuthorizer: MyCognitoAuth
+        #Authorizers:
+          #MyCognitoAuth:
+            #UserPoolArn: !GetAtt OrderCognitoPool.Arn
 
   ApiGwExecutionRole: 
     Type: "AWS::IAM::Role"
@@ -269,6 +297,7 @@ Resources:
             - !GetAtt GetOrderFunction.Arn
             - !GetAtt DeleteOrderFunction.Arn
             - !GetAtt OrderQueue.Arn
+            - !GetAtt MyAuthFunction.Arn
       Roles: 
         - Ref: "ApiGwExecutionRole"
 
@@ -407,6 +436,9 @@ Outputs:
 
   SendOrderLambdaArn:
     Value: !GetAtt [SendOrderFunction,Arn]
+
+  MyAuthFunctionArn:
+    Value: !GetAtt [MyAuthFunction,Arn]
 
   OrderSnsTopicName:
     Value: !GetAtt [OrderSnsTopic,TopicName]
