@@ -1,0 +1,26 @@
+version: '3.9'
+ 
+services:
+  activemq:
+    image: symptoma/activemq:latest
+    container_name: 'activemq'
+    ports:
+      - 61616:61616
+      - 8161:8161
+    volumes:
+      - ~/Documents/data/activemq/data:/data/activemq
+      - ~/Documents/data/activemq/log:/var/log/activemq
+  application:
+    image: yvesdenis/demo-app:v1
+    container_name: 'demo-app'
+    ports:
+      - 8080:8080
+    environment:
+      - BROKER_URL=tcp://activemq:61616
+      - BROKER_USER=admin
+      - BROKER_PWD=admin
+      - BROKER_QUEUE_NAME=demo
+    depends_on:
+      - activemq
+
+

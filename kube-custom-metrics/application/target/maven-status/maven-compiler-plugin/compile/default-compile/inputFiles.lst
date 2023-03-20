@@ -1,0 +1,5 @@
+/Users/pc/Documents/website-projects-articles/kube-custom-metrics/application/src/main/java/com/custom/metrics/hpa/Application.java
+/Users/pc/Documents/website-projects-articles/kube-custom-metrics/application/src/main/java/com/custom/metrics/hpa/model/Message.java
+/Users/pc/Documents/website-projects-articles/kube-custom-metrics/application/src/main/java/com/custom/metrics/hpa/sender/MessageSender.java
+/Users/pc/Documents/website-projects-articles/kube-custom-metrics/application/src/main/java/com/custom/metrics/hpa/receiver/MessageReceiver.java
+/Users/pc/Documents/website-projects-articles/kube-custom-metrics/application/src/main/java/com/custom/metrics/hpa/controller/MessageController.java
