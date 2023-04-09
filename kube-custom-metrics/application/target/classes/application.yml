@@ -1,0 +1,8 @@
+spring:
+  activemq:
+    broker-url: ${BROKER_URL}
+    user: ${BROKER_USER}
+    password: ${BROKER_PWD}
+
+inbound:
+  queue: ${BROKER_QUEUE_NAME}

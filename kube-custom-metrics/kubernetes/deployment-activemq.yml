@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: activemq
+spec:
+  selector:
+    matchLabels:
+      app: activemq
+  template:
+    metadata:
+      labels:
+        app: activemq
+    spec:
+      containers:
+      - name: activemq
+        image: symptoma/activemq:latest
+        volumeMounts:
+        - mountPath: /data/activemq
+          name: data-volume
+        - mountPath: /var/log/activemq
+          name: log-volume
+        resources:
+          requests:
+            memory: "263Mi"
+            cpu: "400m"
+          limits:
+            memory: "263Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8161
+        - containerPort: 61616
+      volumes:
+      - name: data-volume
+        emptyDir:
+          sizeLimit: 100Mi
+      - name: log-volume
+        emptyDir:
+          sizeLimit: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: activemq
+spec:
+  ports:
+    - name: http
+      port: 8161
+      targetPort: 8161
+    - name: tcp
+      port: 61616
+      targetPort: 61616
+  selector:
+    app: activemq
