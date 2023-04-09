@@ -91,18 +91,19 @@ You can scale the application in proportion to the number of messages in the que
 
 You should be able to see the number of pending messages from http://localhost:8080/metrics and from the custom metrics endpoint:
 
-kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/namespaces/default/pods/*/messages" | jq .
-Autoscaling workers
+`kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/namespaces/default/pods/*/messages" | jq .`
 
 You may need to wait three minutes before you can see more pods joining the deployment with:
 
-kubectl get pods
+`kubectl get pods` 
+
 The autoscaler will remove pods from the deployment every 5 minutes.
 
 You can inspect the event and triggers in the HPA with:
 
-kubectl get hpa spring-boot-hpa
-Notes
+`kubectl get hpa demo-app`
+
+## Notes
 
 The configuration for metrics and metrics server is configured to run on minikube only.
 
