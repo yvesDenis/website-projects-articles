@@ -1,15 +1,7 @@
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 runtimeConfig:
-  "api/all": "true"
-kubeadmConfigPatches:
-  - |
-    kind: ClusterConfiguration
-    metadata:
-      name: config
-    apiServer:
-       extraArgs:
-         "authorization-webhook-version": "v1"
+  "authentication.k8s.io/v1beta1": "true"
 nodes:
 - role: control-plane
 - role: worker
