@@ -1,4 +1,4 @@
-FROM node:16@sha256:d70de5be007866473408af5cc39f6039d990d8d4f72ae13438b0b4f83b904b31
+FROM node:bullseye-slim
 
 LABEL maintainer="Yves-Denis Deffo"  \
       version="1.0.0" \

@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vpa
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
