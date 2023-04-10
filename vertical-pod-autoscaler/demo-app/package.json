@@ -1,0 +1,28 @@
+{
+  "name": "demo-app",
+  "version": "1.0.0",
+  "description": "Ordinary http server with one exposed endpoint",
+  "main": "server.js",
+  "scripts": {
+    "test": "jest --watchAll"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yvesDenis/website-projects-articles.git"
+  },
+  "keywords": [
+    "vpa",
+    "nodejs"
+  ],
+  "author": "Yves Denis Deffo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yvesDenis/website-projects-articles/issues"
+  },
+  "homepage": "https://github.com/yvesDenis/website-projects-articles#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "jest": "^29.5.0",
+    "supertest": "^6.3.3"
+  }
+}
