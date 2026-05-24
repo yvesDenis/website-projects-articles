@@ -1,0 +1,13 @@
+pandas>=2.2
+numpy>=1.26
+scikit-learn>=1.5
+matplotlib>=3.9
+seaborn>=0.13
+jupyter>=1.0
+ipykernel>=6.29
+joblib>=1.4
+mlflow>=2.13
+fastapi>=0.111
+uvicorn[standard]>=0.30
+psycopg2-binary>=2.9
+evidently>=0.4.33,<0.5

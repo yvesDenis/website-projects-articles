@@ -1,0 +1,22 @@
+# Raw data — retrieved via dvc pull
+data/telco_churn.csv
+
+# Model artifacts — retrieved via dvc pull
+models/model.pkl
+models/preprocessor.pkl
+
+# MLflow local state
+mlflow.db
+mlruns/
+
+# Virtual environment
+.ml-env/
+
+# Generated reports
+reports/drift_report.html
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
