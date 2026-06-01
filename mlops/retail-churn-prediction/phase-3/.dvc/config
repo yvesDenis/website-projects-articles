@@ -1,0 +1,12 @@
+[core]
+    # no_scm = True because this .dvc/ lives inside a git repo.
+    # DVC pointer files (.dvc) are still tracked by git normally.
+    no_scm = True
+    remote = s3_remote
+
+['remote "s3_remote"']
+    # Bucket name is set by `make dvc-configure` after `terraform apply`.
+    # Phase 3 can share the same S3 bucket as Phase 2 (different prefix)
+    # or use a dedicated bucket — either works.
+    url    = s3://CONFIGURE-VIA-MAKE-DVC-CONFIGURE/dvc
+    region = us-east-1

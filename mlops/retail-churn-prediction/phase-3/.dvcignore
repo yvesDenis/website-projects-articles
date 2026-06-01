@@ -1,0 +1,4 @@
+# DVC-managed paths — these are tracked as pointers, not raw files
+/data/telco_churn.csv
+/models/model.pkl
+/models/preprocessor.pkl
