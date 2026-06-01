@@ -1,0 +1,9 @@
+# Minimal dependencies for the Docker image (API only — no training or DVC tools)
+fastapi>=0.111
+uvicorn[standard]>=0.30
+joblib>=1.4
+scikit-learn>=1.5
+pandas>=2.2
+numpy>=1.26
+psycopg2-binary>=2.9
+boto3>=1.34

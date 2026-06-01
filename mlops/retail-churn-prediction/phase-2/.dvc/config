@@ -1,0 +1,12 @@
+[core]
+    # no_scm = True because this .dvc/ lives inside a git repo (the parent repo
+    # already manages git hooks).  DVC pointer files (.dvc) are still tracked by
+    # git normally — `no_scm` only suppresses DVC's own git hook installation.
+    no_scm = True
+    remote = s3_remote
+
+['remote "s3_remote"']
+    # Bucket name is set by `make dvc-configure` after `terraform apply`.
+    # Run that target once before the first `dvc push`.
+    url = s3://CONFIGURE-VIA-MAKE-DVC-CONFIGURE/dvc
+    region = us-east-1

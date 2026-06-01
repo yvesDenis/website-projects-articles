@@ -1,0 +1,44 @@
+# Local development only — mirrors the ECS environment.
+# The API container reads DATABASE_URL from the environment or falls back to
+# the Postgres service defined below.
+
+services:
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://churn:churn@db:5432/churn
+      MODELS_DIR: /app/models
+      # Set these to enable CloudWatch/SNS locally (optional):
+      # AWS_DEFAULT_REGION: us-east-1
+      # DRIFT_SNS_TOPIC_ARN: arn:aws:sns:...
+    volumes:
+      # Mount models/ so a local `make retrain` updates the container
+      # without a full Docker rebuild
+      - ./models:/app/models
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB:       churn
+      POSTGRES_USER:     churn
+      POSTGRES_PASSWORD: churn
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U churn -d churn"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:

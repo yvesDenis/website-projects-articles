@@ -1,0 +1,171 @@
+name: CI/CD
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Trigger: any push or PR that touches phase-2 files.
+# Jobs:
+#   evaluate  — pull data + model from S3 (DVC), retrain, gate on ROC-AUC ≥ 0.78
+#   build     — bake the passing model into a Docker image, push to ECR
+#   deploy    — update ECS service with the new image (main branch only)
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "mlops/retail-churn-prediction/phase-2/**"
+  pull_request:
+    branches: [main, master]
+    paths:
+      - "mlops/retail-churn-prediction/phase-2/**"
+
+env:
+  AWS_REGION:      us-east-1
+  ECR_REPOSITORY:  churn-api
+  ECS_CLUSTER:     churn-cluster
+  ECS_SERVICE:     churn-api
+  CONTAINER_NAME:  churn-api
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Job 1 — Evaluate
+# Pulls the current dataset and model artifacts from the S3 DVC remote,
+# runs a full retrain, and exits with code 1 if ROC-AUC < 0.78.
+# On success (main branch push only) it pushes the updated artifacts back.
+# ─────────────────────────────────────────────────────────────────────────────
+jobs:
+  evaluate:
+    name: "Train & ROC-AUC gate"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mlops/retail-churn-prediction/phase-2
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: mlops/retail-churn-prediction/phase-2/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Pull data and model artifacts from S3 (DVC)
+        run: dvc pull
+
+      - name: Retrain and validate ROC-AUC ≥ 0.78
+        # train.py exits with code 1 when AUC < 0.78 — this gates the pipeline
+        run: python src/train.py --data data/telco_churn.csv --model-output models/
+
+      - name: Push updated model artifacts to S3 (DVC)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: dvc push
+
+      - name: Upload trained models for next job
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: trained-models-${{ github.sha }}
+          path: |
+            mlops/retail-churn-prediction/phase-2/models/model.pkl
+            mlops/retail-churn-prediction/phase-2/models/preprocessor.pkl
+          retention-days: 1
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Job 2 — Build & Push
+  # Downloads the freshly trained model artifacts, bakes them into the Docker
+  # image, and pushes both a commit-SHA tag and :latest to ECR.
+  # ─────────────────────────────────────────────────────────────────────────
+  build:
+    name: "Build & push to ECR"
+    needs: evaluate
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    outputs:
+      image: ${{ steps.push.outputs.image }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download trained models
+        uses: actions/download-artifact@v4
+        with:
+          name: trained-models-${{ github.sha }}
+          path: mlops/retail-churn-prediction/phase-2/models/
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image to ECR
+        id: push
+        working-directory: mlops/retail-churn-prediction/phase-2
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          TAG: ${{ github.sha }}
+        run: |
+          docker build \
+            -t "$REGISTRY/$ECR_REPOSITORY:$TAG" \
+            -t "$REGISTRY/$ECR_REPOSITORY:latest" \
+            .
+          docker push "$REGISTRY/$ECR_REPOSITORY:$TAG"
+          docker push "$REGISTRY/$ECR_REPOSITORY:latest"
+          echo "image=$REGISTRY/$ECR_REPOSITORY:$TAG" >> "$GITHUB_OUTPUT"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Job 3 — Deploy
+  # Fetches the current ECS task definition, swaps the image tag, registers
+  # a new task definition revision, and updates the ECS service.
+  # Waits for service stability (all old tasks replaced) before succeeding.
+  # ─────────────────────────────────────────────────────────────────────────
+  deploy:
+    name: "Deploy to ECS Fargate"
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Download current ECS task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition churn-api \
+            --query taskDefinition \
+            --output json > /tmp/task-def.json
+
+      - name: Render new task definition with updated image
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: /tmp/task-def.json
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ needs.build.outputs.image }}
+
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true

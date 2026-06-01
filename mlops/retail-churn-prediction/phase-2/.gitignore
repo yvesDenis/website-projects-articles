@@ -1,0 +1,30 @@
+# Python
+.ml-env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+
+# Model artifacts and data — tracked by DVC, not git
+models/
+data/telco_churn.csv
+
+# MLflow
+mlruns/
+mlflow.db
+
+# Reports
+reports/
+
+# Terraform state and secrets
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/*.tfvars
+
+# DVC internals
+.dvc/cache/
+.dvc/tmp/
